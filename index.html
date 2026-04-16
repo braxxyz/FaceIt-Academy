@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FaceIt Overwatch - Competitivo</title>
   <link rel="stylesheet" href="styles.css" />
+  <script defer src="app.js"></script>
 </head>
 <body>
   <header class="site-header">
@@ -12,8 +13,8 @@
       <a class="logo" href="#">FaceItOW</a>
       <nav class="nav">
         <a href="#matches">Partidos</a>
-        <a class="btn btn-outline" href="#join">Inscribir jugador</a>
-        <a class="btn btn-primary" href="#join">Inscribir equipo</a>
+        <a class="btn btn-outline" href="perfil.html">Inscribir jugador</a>
+        <a class="btn btn-primary" href="crear-equipo.html">Inscribir equipo</a>
       </nav>
     </div>
   </header>
@@ -28,8 +29,8 @@
           <p>Encuentra scrims, crea equipos y escala en la liga como un verdadero profesional.</p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="#matches">Ver partidos</a>
-            <a class="btn btn-light" href="#join">Inscribir equipo</a>
-            <a class="btn btn-outline" href="#join">Inscribir jugador</a>
+            <a class="btn btn-light" href="crear-equipo.html">Inscribir equipo</a>
+            <a class="btn btn-outline" href="perfil.html">Inscribir jugador</a>
           </div>
         </div>
         <div class="hero-image" aria-hidden="true"></div>
@@ -108,62 +109,12 @@
           <h2>Equipos</h2>
           <p>Tabla de clasificación (victorias, derrotas y Tulhu Points — 1 punto por mapa ganado).</p>
         </div>
-        <div class="table-wrapper">
-          <table class="match-table">
-            <thead>
-              <tr>
-                <th>Pos</th>
-                <th>Equipo</th>
-                <th>Victorias</th>
-                <th>Derrotas</th>
-                <th>Tulhu</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>Animals Mayhem</td>
-                <td>0</td>
-                <td>0</td>
-                <td>0</td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>Golden Kings</td>
-                <td>0</td>
-                <td>0</td>
-                <td>0</td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td>Monsters Hunters</td>
-                <td>0</td>
-                <td>0</td>
-                <td>0</td>
-              </tr>
-              <tr>
-                <td>4</td>
-                <td>ChurCHILL</td>
-                <td>0</td>
-                <td>0</td>
-                <td>0</td>
-              </tr>
-              <tr>
-                <td>5</td>
-                <td>Manaties Cola Blanca</td>
-                <td>0</td>
-                <td>0</td>
-                <td>0</td>
-              </tr>
-              <tr>
-                <td>6</td>
-                <td>Sky Warriors</td>
-                <td>0</td>
-                <td>0</td>
-                <td>0</td>
-              </tr>
-            </tbody>
-          </table>
+        <div data-home-teams>
+        <div class="empty-state">
+          <h3>No hay equipos cargados todavÃ­a</h3>
+          <p>Usa el formulario de inscripciÃ³n para crear el primer equipo con su nombre, descripciÃ³n, jugadores y logo.</p>
+          <a class="btn btn-primary" href="crear-equipo.html">Crear equipo</a>
+        </div>
         </div>
       </div>
     </section>
@@ -174,8 +125,8 @@
           <h2>Listo para competir?</h2>
           <p>Regístrate gratis y comienza a sumar victorias en Overwatch.</p>
           <div class="cta-actions">
-            <a class="btn btn-primary" href="#">Inscribir equipo</a>
-            <a class="btn btn-light" href="#">Inscribir jugador</a>
+            <a class="btn btn-primary" href="crear-equipo.html">Inscribir equipo</a>
+            <a class="btn btn-light" href="perfil.html">Inscribir jugador</a>
             <a class="btn btn-outline" href="#">Iniciar sesión</a>
           </div>
         </div>

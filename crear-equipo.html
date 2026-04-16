@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crear equipo | FaceItOW</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">FaceItOW</a>
+      <nav class="nav">
+        <a href="index.html#matches">Partidos</a>
+        <a href="index.html#teams">Equipos</a>
+        <a class="btn btn-primary" href="crear-equipo.html">Crear equipo</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section form-page">
+      <div class="container form-layout">
+        <div class="form-intro">
+          <p class="eyebrow">Inscripción de equipo</p>
+          <h1>Crea tu equipo para la liga</h1>
+          <p>Completa la información principal del equipo. Dejé espacios para nombre, descripción, jugadores y logo.</p>
+          <a class="btn btn-outline" href="index.html">Volver al inicio</a>
+        </div>
+
+        <div class="form-card team-form-card">
+          <form class="team-form" data-team-form>
+            <div class="form-group">
+              <label for="team-name">Nombre del equipo</label>
+              <input id="team-name" name="team-name" type="text" placeholder="Ejemplo: Academy Titans" />
+            </div>
+
+            <div class="form-group">
+              <label for="team-description">Descripción del equipo</label>
+              <textarea id="team-description" name="team-description" rows="5" placeholder="Describe el estilo del equipo, región, horarios o datos importantes."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Jugadores</label>
+              <div class="player-grid">
+                <input type="text" name="player-1" placeholder="Jugador 1" />
+                <input type="text" name="player-2" placeholder="Jugador 2" />
+                <input type="text" name="player-3" placeholder="Jugador 3" />
+                <input type="text" name="player-4" placeholder="Jugador 4" />
+                <input type="text" name="player-5" placeholder="Jugador 5" />
+                <input type="text" name="player-6" placeholder="Suplente o coach" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="team-logo">Logo del equipo</label>
+              <input id="team-logo" name="team-logo" type="file" accept="image/*" />
+              <p class="field-help">Puedes subir PNG, JPG o cualquier imagen para identificar tu equipo.</p>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit">Guardar equipo</button>
+              <a class="btn btn-light" href="index.html#teams">Ver lista de equipos</a>
+            </div>
+            <p class="form-message" data-team-message></p>
+          </form>
+        </div>
+      </div>
+
+      <div class="container saved-section">
+        <div class="section-header">
+          <h2>Equipos guardados</h2>
+          <p>Los equipos que registres se irán viendo aquí mismo.</p>
+        </div>
+        <div data-team-list></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
