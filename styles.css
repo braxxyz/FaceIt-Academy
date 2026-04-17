@@ -63,12 +63,10 @@ a {
 }
 
 .menu-button {
-  position: absolute;
-  right: 1.25rem;
-  top: 50%;
-  transform: translateY(-50%);
+  position: relative;
   width: 42px;
   height: 42px;
+  min-width: 42px;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(3, 6, 36, 0.9);
@@ -76,6 +74,7 @@ a {
   align-items: center;
   justify-content: center;
   gap: 4px;
+  margin-left: 1rem;
   padding: 0;
   cursor: pointer;
   transition: background 150ms ease, transform 150ms ease;
