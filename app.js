@@ -204,13 +204,41 @@ function initProfileForm() {
       return;
     }
 
-    const profiles = readStorage(PROFILE_STORAGE_KEY);
-    profiles.push(profile);
-    writeStorage(PROFILE_STORAGE_KEY, profiles);
-    form.reset();
+    // Check if user is logged in
+    try {
+      const userResponse = await fetch('/api/user');
+      const userResult = await userResponse.json();
+      if (userResult.userId) {
+        // Save to server
+        const response = await fetch('/api/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(profile)
+        });
+        const result = await response.json();
+        if (result.success) {
+          if (message) message.textContent = "Perfil guardado correctamente en el servidor.";
+        } else {
+          if (message) message.textContent = "Error al guardar perfil.";
+        }
+      } else {
+        // Save to localStorage
+        const profiles = readStorage(PROFILE_STORAGE_KEY);
+        profiles.push(profile);
+        writeStorage(PROFILE_STORAGE_KEY, profiles);
+        if (message) message.textContent = "Perfil guardado localmente. Inicia sesión para guardar en el servidor.";
+        renderProfiles(list);
+      }
+    } catch (error) {
+      // Fallback to localStorage
+      const profiles = readStorage(PROFILE_STORAGE_KEY);
+      profiles.push(profile);
+      writeStorage(PROFILE_STORAGE_KEY, profiles);
+      if (message) message.textContent = "Perfil guardado localmente.";
+      renderProfiles(list);
+    }
 
-    if (message) message.textContent = "Perfil guardado correctamente.";
-    renderProfiles(list);
+    form.reset();
   });
 }
 
@@ -218,4 +246,142 @@ document.addEventListener("DOMContentLoaded", () => {
   initTeamForm();
   initProfileForm();
   renderTeams(document.querySelector("[data-home-teams]"));
+  initLogin();
 });
+
+// Login functionality
+function initLogin() {
+  const loginBtn = document.getElementById('hero-login-btn');
+  const registerBtn = document.getElementById('hero-register-btn');
+  const loginModal = document.getElementById('login-modal');
+  const registerModal = document.getElementById('register-modal');
+  const closeBtns = document.querySelectorAll('.close');
+  const registerLink = document.getElementById('register-link');
+  const loginForm = document.getElementById('login-form');
+  const registerForm = document.getElementById('register-form');
+
+  if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+      loginModal.style.display = 'block';
+    });
+  }
+
+  if (registerBtn) {
+    registerBtn.addEventListener('click', () => {
+      registerModal.style.display = 'block';
+    });
+  }
+
+  if (registerLink) {
+    registerLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      loginModal.style.display = 'none';
+      registerModal.style.display = 'block';
+    });
+  }
+
+  closeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      loginModal.style.display = 'none';
+      registerModal.style.display = 'none';
+    });
+  });
+
+  window.addEventListener('click', (e) => {
+    if (e.target === loginModal) {
+      loginModal.style.display = 'none';
+    }
+    if (e.target === registerModal) {
+      registerModal.style.display = 'none';
+    }
+  });
+
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(loginForm);
+      const data = {
+        overwatchId: formData.get('overwatchId'),
+        password: formData.get('password')
+      };
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert('Inicio de sesión exitoso');
+          loginModal.style.display = 'none';
+          loginForm.reset();
+          // Update UI to show logged in user
+          checkLoginStatus();
+        } else {
+          alert(result.error);
+        }
+      } catch (error) {
+        alert('Error al iniciar sesión');
+      }
+    });
+  }
+
+  if (registerForm) {
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(registerForm);
+      const data = {
+        overwatchId: formData.get('overwatchId'),
+        password: formData.get('password')
+      };
+
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert('Registro exitoso. Ahora crea tu perfil.');
+          registerModal.style.display = 'none';
+          registerForm.reset();
+          // Redirect to profile creation
+          window.location.href = 'perfil.html';
+        } else {
+          alert(result.error);
+        }
+      } catch (error) {
+        alert('Error al registrarse');
+      }
+    });
+  }
+
+  checkLoginStatus();
+}
+
+async function checkLoginStatus() {
+  try {
+    const response = await fetch('/api/user');
+    const result = await response.json();
+    const loginBtn = document.getElementById('hero-login-btn');
+    const registerBtn = document.getElementById('hero-register-btn');
+    if (result.userId) {
+      if (loginBtn) loginBtn.textContent = `Sesión: ${result.userId}`;
+      if (registerBtn) registerBtn.style.display = 'none';
+      if (loginBtn) loginBtn.addEventListener('click', logout);
+    } else {
+      if (loginBtn) loginBtn.textContent = 'Iniciar Sesión';
+      if (registerBtn) registerBtn.style.display = 'inline-block';
+    }
+  } catch (error) {
+    console.error('Error checking login status');
+  }
+}
+
+function logout() {
+  fetch('/api/logout', { method: 'POST' }).then(() => {
+    checkLoginStatus();
+  });
+}
