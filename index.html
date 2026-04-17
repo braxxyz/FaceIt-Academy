@@ -3,18 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FaceIt Overwatch - Competitivo</title>
+  <title>Academy CR</title>
   <link rel="stylesheet" href="styles.css" />
-  <script defer src="app.js"></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="logo" href="#">FaceItOW</a>
+      <a class="logo" href="#">
+        <img class="logo-image" src="logo.svg" alt="Academy CR logo" />
+        ACADEMY CR
+      </a>
       <nav class="nav">
-        <a href="#matches">Partidos</a>
-        <a class="btn btn-outline" href="perfil.html">Inscribir jugador</a>
-        <a class="btn btn-primary" href="crear-equipo.html">Inscribir equipo</a>
+        <a href="#calendar">Calendario</a>
+        <a class="btn btn-outline" href="#join">Inscribir jugador</a>
+        <a class="btn btn-primary" href="#join">Crear Equipo</a>
       </nav>
     </div>
   </header>
@@ -23,83 +26,15 @@
     <section class="hero" id="hero">
       <div class="container">
         <div class="hero-content">
-          <h1>FaceIt 
-            by Academy CR
-          </h1>
+          <h1>ACADEMY CR</h1>
           <p>Encuentra scrims, crea equipos y escala en la liga como un verdadero profesional.</p>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="#matches">Ver partidos</a>
-            <a class="btn btn-light" href="crear-equipo.html">Inscribir equipo</a>
-            <a class="btn btn-outline" href="perfil.html">Inscribir jugador</a>
+            <a class="btn btn-primary" href="#calendar">Ver calendario</a>
+            <a class="btn btn-light" href="login.html">Iniciar Sesión</a>
+            <a class="btn btn-outline" href="login.html">Crear Cuenta</a>
           </div>
         </div>
         <div class="hero-image" aria-hidden="true"></div>
-      </div>
-    </section>
-
-    <section class="section section-alt" id="matches">
-      <div class="container">
-        <div class="section-header">
-          <h2>Próximos partidos</h2>
-          <p>Calendario de los grupos con sus horarios.</p>
-        </div>
-
-        <div class="match-group">
-          <h3>Grupo A</h3>
-          <div class="table-wrapper">
-            <table class="match-table">
-              <thead>
-                <tr>
-                  <th>Hora</th>
-                  <th>Partido</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>6:30 pm</td>
-                  <td><strong>Manaties Cola Blanca</strong> vs <strong>Golden Kings</strong></td>
-                </tr>
-                <tr>
-                  <td>7:30 pm</td>
-                  <td><strong>Sky Warriors</strong> vs <strong>Manaties Cola Blanca</strong></td>
-                </tr>
-                <tr>
-                  <td>8:30 pm</td>
-                  <td><strong>Sky Warriors</strong> vs <strong>Golden Kings</strong></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="match-group">
-          <h3>Grupo B</h3>
-          <div class="table-wrapper">
-            <table class="match-table">
-              <thead>
-                <tr>
-                  <th>Hora</th>
-                  <th>Partido</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>9:00 pm</td>
-                  <td><strong>Animals Mayhem</strong> vs <strong>Monsters Hunters</strong></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="match-remark">
-            <p><strong>Luego del Domingo 22</strong></p>
-            <p>Tenemos el <strong>Miércoles 25</strong> para terminar la otra parte del Grupo B</p>
-            <ul>
-              <li><strong>Animals Mayhem</strong> vs <strong>ChurCHILL</strong> — Hora por definir</li>
-              <li><strong>Monsters Hunters</strong> vs <strong>ChurCHILL</strong> — Hora por definir</li>
-            </ul>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -109,24 +44,85 @@
           <h2>Equipos</h2>
           <p>Tabla de clasificación (victorias, derrotas y Tulhu Points — 1 punto por mapa ganado).</p>
         </div>
-        <div data-home-teams>
-        <div class="empty-state">
-          <h3>No hay equipos cargados todavÃ­a</h3>
-          <p>Usa el formulario de inscripciÃ³n para crear el primer equipo con su nombre, descripciÃ³n, jugadores y logo.</p>
-          <a class="btn btn-primary" href="crear-equipo.html">Crear equipo</a>
-        </div>
+        <div class="table-wrapper">
+          <table class="match-table">
+            <thead>
+              <tr>
+                <th>Pos</th>
+                <th>Equipo</th>
+                <th>Victorias</th>
+                <th>Derrotas</th>
+                <th>Tulhu</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Animals Mayhem</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>Golden Kings</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>Monsters Hunters</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>ChurCHILL</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>Manaties Cola Blanca</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>Sky Warriors</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
-
+    <section class="section" id="calendar">
+      <div class="container">
+        <div class="section-header">
+          <h2>Calendario de Juegos</h2>
+          <p>Fechas y horarios de los partidos programados.</p>
+        </div>
+        <div id="calendar-container">
+          <!-- Aquí se puede integrar un calendario interactivo -->
+          <p>Calendario en desarrollo. Próximamente podrás ver las fechas de los juegos aquí.</p>
+        </div>
+      </div>
+    </section>
     <section class="section section-cta" id="join">
       <div class="container">
         <div class="cta">
           <h2>Listo para competir?</h2>
           <p>Regístrate gratis y comienza a sumar victorias en Overwatch.</p>
           <div class="cta-actions">
-            <a class="btn btn-primary" href="crear-equipo.html">Inscribir equipo</a>
-            <a class="btn btn-light" href="perfil.html">Inscribir jugador</a>
+            <a class="btn btn-primary" href="#">Inscribir equipo</a>
+            <a class="btn btn-light" href="#">Inscribir jugador</a>
             <a class="btn btn-outline" href="#">Iniciar sesión</a>
           </div>
         </div>
@@ -136,7 +132,8 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>© 2026 FaceItOW. Nombres e imágenes son sólo de ejemplo.</p>
+      <p>© 2026 Academy CR. Nombres e imágenes son sólo de ejemplo.</p>
+      <p>Esta página fue creada 100% por Akashi.</p>
       <div class="footer-links">
         <a href="#">Términos</a>
         <a href="#">Privacidad</a>
