@@ -844,6 +844,19 @@ a {
   padding: 1.6rem;
 }
 
+.team-image-card {
+  margin-bottom: 1.4rem;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.team-image-card img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
 .team-form {
   display: grid;
   gap: 1rem;
