@@ -507,6 +507,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initHeaderMenu();
   initPasswordToggle();
   initProfileButton();
+  initProfileModal();
 });
 
 function initHeaderMenu() {
@@ -540,9 +541,9 @@ function initProfileButton() {
   profileLink.style.display = 'inline-flex';
   const avatar = profileLink.querySelector('.profile-avatar');
   if (avatar) {
-    const label = currentUser.overwatchId || 'P';
-    avatar.textContent = label.charAt(0).toUpperCase();
-    profileLink.setAttribute('title', `Ver perfil de ${label}`);
+    const label = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : (currentUser.overwatchId || 'P').charAt(0).toUpperCase();
+    avatar.textContent = label;
+    profileLink.setAttribute('title', `Ver perfil de ${currentUser.name || currentUser.overwatchId}`);
   }
 }
 
@@ -615,7 +616,12 @@ function initLogin() {
         return;
       }
 
-      setCurrentUser({ overwatchId, loggedAt: Date.now() });
+      setCurrentUser({
+        name: account.name,
+        email: account.email,
+        overwatchId: account.overwatchId,
+        loggedAt: Date.now()
+      });
       writeObjectStorage(LAST_LOGIN_STORAGE_KEY, { overwatchId, password });
       alert('Inicio de sesión exitoso');
       window.location.href = 'index.html';
@@ -626,11 +632,13 @@ function initLogin() {
     registerForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const formData = new FormData(registerForm);
+      const name = String(formData.get('name') || '').trim();
+      const email = String(formData.get('email') || '').trim();
       const overwatchId = String(formData.get('overwatchId') || '').trim();
       const password = String(formData.get('password') || '').trim();
       const accounts = readAccounts();
 
-      if (!overwatchId || !password) {
+      if (!name || !email || !overwatchId || !password) {
         alert('Completa todos los campos para registrarte.');
         return;
       }
@@ -640,10 +648,18 @@ function initLogin() {
         return;
       }
 
-      accounts.push({ overwatchId, password });
+      const newAccount = {
+        name,
+        email,
+        overwatchId,
+        password,
+        createdAt: Date.now()
+      };
+
+      accounts.push(newAccount);
       writeAccounts(accounts);
       writeObjectStorage(LAST_LOGIN_STORAGE_KEY, { overwatchId, password });
-      setCurrentUser({ overwatchId, loggedAt: Date.now() });
+      setCurrentUser({ name, email, overwatchId, loggedAt: Date.now() });
       alert('Registro exitoso. Ya estás conectado.');
       window.location.href = 'index.html';
     });
@@ -705,7 +721,7 @@ async function checkLoginStatus() {
 
   if (currentUser) {
     if (loginBtn) {
-      loginBtn.textContent = `Sesión: ${currentUser.overwatchId}`;
+      loginBtn.textContent = `Sesión: ${currentUser.name || currentUser.overwatchId}`;
       loginBtn.addEventListener('click', logout);
     }
     if (registerBtn) registerBtn.style.display = 'none';
