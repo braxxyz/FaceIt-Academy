@@ -251,50 +251,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Login functionality
 function initLogin() {
-  const loginBtn = document.getElementById('hero-login-btn');
-  const registerBtn = document.getElementById('hero-register-btn');
-  const loginModal = document.getElementById('login-modal');
-  const registerModal = document.getElementById('register-modal');
-  const closeBtns = document.querySelectorAll('.close');
-  const registerLink = document.getElementById('register-link');
+  // For login.html page
+  const loginSection = document.getElementById('login-section');
+  const registerSection = document.getElementById('register-section');
+  const showRegister = document.getElementById('show-register');
+  const showLogin = document.getElementById('show-login');
   const loginForm = document.getElementById('login-form');
   const registerForm = document.getElementById('register-form');
 
-  if (loginBtn) {
-    loginBtn.addEventListener('click', () => {
-      loginModal.style.display = 'block';
+  if (loginSection) {
+    // Check if already logged in
+    fetch('/api/user').then(res => res.json()).then(result => {
+      if (result.userId) {
+        window.location.href = 'index.html';
+      }
     });
   }
 
-  if (registerBtn) {
-    registerBtn.addEventListener('click', () => {
-      registerModal.style.display = 'block';
-    });
-  }
-
-  if (registerLink) {
-    registerLink.addEventListener('click', (e) => {
+  if (showRegister) {
+    showRegister.addEventListener('click', (e) => {
       e.preventDefault();
-      loginModal.style.display = 'none';
-      registerModal.style.display = 'block';
+      loginSection.style.display = 'none';
+      registerSection.style.display = 'block';
     });
   }
 
-  closeBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      loginModal.style.display = 'none';
-      registerModal.style.display = 'none';
+  if (showLogin) {
+    showLogin.addEventListener('click', (e) => {
+      e.preventDefault();
+      registerSection.style.display = 'none';
+      loginSection.style.display = 'block';
     });
-  });
-
-  window.addEventListener('click', (e) => {
-    if (e.target === loginModal) {
-      loginModal.style.display = 'none';
-    }
-    if (e.target === registerModal) {
-      registerModal.style.display = 'none';
-    }
-  });
+  }
 
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -314,10 +302,7 @@ function initLogin() {
         const result = await response.json();
         if (result.success) {
           alert('Inicio de sesión exitoso');
-          loginModal.style.display = 'none';
-          loginForm.reset();
-          // Update UI to show logged in user
-          checkLoginStatus();
+          window.location.href = 'index.html';
         } else {
           alert(result.error);
         }
@@ -345,9 +330,6 @@ function initLogin() {
         const result = await response.json();
         if (result.success) {
           alert('Registro exitoso. Ahora crea tu perfil.');
-          registerModal.style.display = 'none';
-          registerForm.reset();
-          // Redirect to profile creation
           window.location.href = 'perfil.html';
         } else {
           alert(result.error);
@@ -357,6 +339,52 @@ function initLogin() {
       }
     });
   }
+
+  // For index.html modals (if they exist)
+  const loginBtn = document.getElementById('hero-login-btn');
+  const registerBtn = document.getElementById('hero-register-btn');
+  const loginModal = document.getElementById('login-modal');
+  const registerModal = document.getElementById('register-modal');
+  const closeBtns = document.querySelectorAll('.close');
+  const registerLink = document.getElementById('register-link');
+
+  if (loginBtn && loginBtn.tagName === 'BUTTON') {
+    loginBtn.addEventListener('click', () => {
+      loginModal.style.display = 'block';
+    });
+  }
+
+  if (registerBtn && registerBtn.tagName === 'BUTTON') {
+    registerBtn.addEventListener('click', () => {
+      registerModal.style.display = 'block';
+    });
+  }
+
+  if (registerLink) {
+    registerLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      loginModal.style.display = 'none';
+      registerModal.style.display = 'block';
+    });
+  }
+
+  if (closeBtns.length) {
+    closeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        loginModal.style.display = 'none';
+        registerModal.style.display = 'none';
+      });
+    });
+  }
+
+  window.addEventListener('click', (e) => {
+    if (loginModal && e.target === loginModal) {
+      loginModal.style.display = 'none';
+    }
+    if (registerModal && e.target === registerModal) {
+      registerModal.style.display = 'none';
+    }
+  });
 
   checkLoginStatus();
 }

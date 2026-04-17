@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar Sesión | Academy CR</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">ACADEMY CR</a>
+      <nav class="nav">
+        <a href="index.html#calendar">Calendario</a>
+        <a href="index.html#teams">Equipos</a>
+        <a class="btn btn-primary" href="perfil.html">Crear perfil</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section form-page">
+      <div class="container form-layout">
+        <div class="form-intro">
+          <p class="eyebrow">Acceso</p>
+          <h1>Bienvenido a FaceItOW</h1>
+          <p>Inicia sesión con tu ID de Overwatch o crea una cuenta nueva para acceder a todas las funciones.</p>
+          <a class="btn btn-outline" href="index.html">Volver al inicio</a>
+        </div>
+
+        <div class="form-card">
+          <div id="login-section">
+            <h2>Iniciar Sesión</h2>
+            <form id="login-form">
+              <div class="form-group">
+                <label for="overwatch-id">ID de Overwatch</label>
+                <input id="overwatch-id" name="overwatchId" type="text" required />
+              </div>
+              <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input id="password" name="password" type="password" required />
+              </div>
+              <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+            </form>
+            <p>¿No tienes cuenta? <a href="#" id="show-register">Regístrate aquí</a></p>
+          </div>
+
+          <div id="register-section" style="display: none;">
+            <h2>Crear Cuenta</h2>
+            <form id="register-form">
+              <div class="form-group">
+                <label for="reg-overwatch-id">ID de Overwatch</label>
+                <input id="reg-overwatch-id" name="overwatchId" type="text" required />
+              </div>
+              <div class="form-group">
+                <label for="reg-password">Contraseña</label>
+                <input id="reg-password" name="password" type="password" required />
+              </div>
+              <button type="submit" class="btn btn-primary">Crear Cuenta</button>
+            </form>
+            <p>¿Ya tienes cuenta? <a href="#" id="show-login">Inicia sesión</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© 2026 Academy CR. Nombres e imágenes son sólo de ejemplo.</p>
+      <p>Esta página fue creada 100% por Akashi.</p>
+      <div class="footer-links">
+        <a href="#">Términos</a>
+        <a href="#">Privacidad</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
