@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Academy CR</title>
+  <title>Mi Perfil | Academy CR</title>
   <link rel="stylesheet" href="styles.css" />
-  <script src="app.js" defer></script>
+  <script defer src="app.js"></script>
 </head>
 <body>
   <header class="site-header">
@@ -14,6 +14,10 @@
         <img class="logo-image" src="Costa_Rica_Academy.png" alt="Academy CR logo" />
         ACADEMY CR
       </a>
+      <nav class="nav">
+        <a href="index.html#teams">Equipos</a>
+        <a class="btn btn-primary" href="perfil.html">Crear perfil</a>
+      </nav>
       <button class="menu-button" type="button" aria-label="Abrir menú">
         <span></span>
         <span></span>
@@ -33,38 +37,26 @@
   </header>
 
   <main>
-    <section class="hero" id="hero">
+    <section class="section profile-page">
       <div class="container">
-        <div class="hero-content">
-          <h1>ACADEMY CR</h1>
-          <p>Encuentra scrims, crea equipos y escala en la liga como un verdadero profesional.</p>
-          <div class="hero-actions">
-            <a class="btn btn-light" href="login.html">Iniciar Sesión</a>
-            <a class="btn btn-outline" href="login.html">Crear Cuenta</a>
-          </div>
+        <div class="profile-header">
+          <h1>Mi Perfil</h1>
+          <p>Información de tu cuenta y perfiles de jugador</p>
         </div>
-        <div class="hero-image" aria-hidden="true"></div>
-      </div>
-    </section>
 
-    <section class="section" id="calendar">
-      <div class="container">
-        <div class="section-header">
-          <h2>Calendario de Juegos</h2>
-          <p>Fechas y horarios de los partidos programados.</p>
-        </div>
-        <div id="calendar-container" class="calendar-container"></div>
-      </div>
-    </section>
-    <section class="section section-cta" id="join">
-      <div class="container">
-        <div class="cta">
-          <h2>Listo para competir?</h2>
-          <p>Regístrate gratis y comienza a sumar victorias en Overwatch.</p>
-          <div class="cta-actions">
-            <a class="btn btn-primary" href="#">Inscribir equipo</a>
-            <a class="btn btn-light" href="#">Inscribir jugador</a>
-            <a class="btn btn-outline" href="#">Iniciar sesión</a>
+        <div class="profile-content">
+          <div class="user-info-card">
+            <h2>Información de la Cuenta</h2>
+            <div id="user-info">
+              <!-- User info will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <div class="user-profiles-card">
+            <h2>Mis Perfiles de Jugador</h2>
+            <div id="user-profiles">
+              <!-- User profiles will be populated by JavaScript -->
+            </div>
           </div>
         </div>
       </div>

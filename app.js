@@ -3,13 +3,17 @@ const PROFILE_STORAGE_KEY = "academycr_profiles";
 const ACCOUNT_STORAGE_KEY = "academycr_accounts";
 const SESSION_STORAGE_KEY = "academycr_session";
 const LAST_LOGIN_STORAGE_KEY = "academycr_last_login";
+const BACKUP_STORAGE_KEY = "academycr_backup";
+const BACKUP_TIMESTAMP_KEY = "academycr_backup_timestamp";
 
 function readStorage(key) {
   try {
     const value = localStorage.getItem(key);
     return value ? JSON.parse(value) : [];
-  } catch {
-    return [];
+  } catch (error) {
+    console.warn(`Error reading ${key} from localStorage:`, error);
+    // Try to recover from backup
+    return recoverFromBackup(key) || [];
   }
 }
 
@@ -17,42 +21,202 @@ function readObjectStorage(key) {
   try {
     const value = localStorage.getItem(key);
     return value ? JSON.parse(value) : null;
-  } catch {
-    return null;
+  } catch (error) {
+    console.warn(`Error reading ${key} from localStorage:`, error);
+    return recoverFromBackup(key) || null;
+  }
+}
+
+function writeStorage(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    // Auto-backup after writing
+    autoBackup();
+  } catch (error) {
+    console.error(`Error writing ${key} to localStorage:`, error);
+    alert('Error al guardar los datos. Revisa el espacio disponible en tu navegador.');
   }
 }
 
 function writeObjectStorage(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-function writeAccounts(accounts) {
-  writeStorage(ACCOUNT_STORAGE_KEY, accounts);
-}
-
-function readAccounts() {
-  return readStorage(ACCOUNT_STORAGE_KEY);
-}
-
-function getCurrentUser() {
   try {
-    const session = localStorage.getItem(SESSION_STORAGE_KEY);
-    return session ? JSON.parse(session) : null;
-  } catch {
+    localStorage.setItem(key, JSON.stringify(value));
+    // Auto-backup after writing
+    autoBackup();
+  } catch (error) {
+    console.error(`Error writing ${key} to localStorage:`, error);
+    alert('Error al guardar los datos. Revisa el espacio disponible en tu navegador.');
+  }
+}
+
+function autoBackup() {
+  try {
+    const backupData = {
+      teams: readStorage(TEAM_STORAGE_KEY),
+      profiles: readStorage(PROFILE_STORAGE_KEY),
+      accounts: readStorage(ACCOUNT_STORAGE_KEY),
+      session: readObjectStorage(SESSION_STORAGE_KEY),
+      lastLogin: readObjectStorage(LAST_LOGIN_STORAGE_KEY),
+      calendar: readStorage(CALENDAR_STORAGE_KEY),
+      timestamp: Date.now()
+    };
+    localStorage.setItem(BACKUP_STORAGE_KEY, JSON.stringify(backupData));
+    localStorage.setItem(BACKUP_TIMESTAMP_KEY, Date.now().toString());
+
+    // Show notification (only if user is active)
+    if (document.visibilityState === 'visible') {
+      showBackupNotification();
+    }
+  } catch (error) {
+    console.warn('Error creating auto-backup:', error);
+  }
+}
+
+function showBackupNotification() {
+  // Remove existing notification
+  const existing = document.querySelector('.backup-notification');
+  if (existing) existing.remove();
+
+  // Create new notification
+  const notification = document.createElement('div');
+  notification.className = 'backup-notification';
+  notification.innerHTML = `
+    <div class="backup-notification-content">
+      <span>💾 Datos respaldados automáticamente</span>
+      <button class="backup-notification-close" aria-label="Cerrar">&times;</button>
+    </div>
+  `;
+
+  document.body.appendChild(notification);
+
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.remove();
+    }
+  }, 3000);
+
+  // Close button
+  const closeBtn = notification.querySelector('.backup-notification-close');
+  closeBtn.addEventListener('click', () => notification.remove());
+}
+
+function initPeriodicBackup() {
+  // Backup every 5 minutes when page is visible
+  setInterval(() => {
+    if (document.visibilityState === 'visible') {
+      autoBackup();
+    }
+  }, 5 * 60 * 1000); // 5 minutes
+
+  // Backup when page becomes visible
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      autoBackup();
+    }
+  });
+
+  // Backup before page unload
+  window.addEventListener('beforeunload', () => {
+    autoBackup();
+  });
+}
+
+function recoverFromBackup(key) {
+  try {
+    const backup = localStorage.getItem(BACKUP_STORAGE_KEY);
+    if (!backup) return null;
+
+    const backupData = JSON.parse(backup);
+    const mapping = {
+      [TEAM_STORAGE_KEY]: backupData.teams,
+      [PROFILE_STORAGE_KEY]: backupData.profiles,
+      [ACCOUNT_STORAGE_KEY]: backupData.accounts,
+      [SESSION_STORAGE_KEY]: backupData.session,
+      [LAST_LOGIN_STORAGE_KEY]: backupData.lastLogin
+    };
+
+    return mapping[key] || null;
+  } catch (error) {
+    console.warn('Error recovering from backup:', error);
     return null;
   }
 }
 
-function setCurrentUser(user) {
-  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(user));
+function exportAllData() {
+  const data = {
+    teams: readStorage(TEAM_STORAGE_KEY),
+    profiles: readStorage(PROFILE_STORAGE_KEY),
+    accounts: readStorage(ACCOUNT_STORAGE_KEY),
+    session: readObjectStorage(SESSION_STORAGE_KEY),
+    lastLogin: readObjectStorage(LAST_LOGIN_STORAGE_KEY),
+    calendar: readStorage(CALENDAR_STORAGE_KEY),
+    exportedAt: new Date().toISOString(),
+    version: "1.0"
+  };
+
+  const dataStr = JSON.stringify(data, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(dataBlob);
+  link.download = `academy-cr-backup-${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
-function clearCurrentUser() {
-  localStorage.removeItem(SESSION_STORAGE_KEY);
+function importAllData(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+
+        if (confirm('¿Estás seguro de importar estos datos? Esto reemplazará toda la información actual.')) {
+          if (data.teams) writeStorage(TEAM_STORAGE_KEY, data.teams);
+          if (data.profiles) writeStorage(PROFILE_STORAGE_KEY, data.profiles);
+          if (data.accounts) writeStorage(ACCOUNT_STORAGE_KEY, data.accounts);
+          if (data.session) writeObjectStorage(SESSION_STORAGE_KEY, data.session);
+          if (data.lastLogin) writeObjectStorage(LAST_LOGIN_STORAGE_KEY, data.lastLogin);
+          if (data.calendar) writeStorage(CALENDAR_STORAGE_KEY, data.calendar);
+
+          alert('Datos importados correctamente. La página se recargará.');
+          window.location.reload();
+          resolve();
+        }
+      } catch (error) {
+        alert('Error al importar los datos. Verifica que el archivo sea válido.');
+        reject(error);
+      }
+    };
+    reader.onerror = () => reject(new Error('Error al leer el archivo'));
+    reader.readAsText(file);
+  });
 }
 
-function writeStorage(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
+function clearAllData() {
+  if (confirm('¿Estás seguro de borrar TODOS los datos? Esta acción no se puede deshacer.')) {
+    localStorage.clear();
+    alert('Todos los datos han sido borrados. La página se recargará.');
+    window.location.reload();
+  }
+}
+
+function getStorageInfo() {
+  let total = 0;
+  for (let key in localStorage) {
+    if (localStorage.hasOwnProperty(key)) {
+      total += localStorage[key].length + key.length;
+    }
+  }
+  return {
+    used: (total / 1024).toFixed(2) + ' KB',
+    available: '5-10 MB (depende del navegador)',
+    lastBackup: localStorage.getItem(BACKUP_TIMESTAMP_KEY)
+      ? new Date(parseInt(localStorage.getItem(BACKUP_TIMESTAMP_KEY))).toLocaleString()
+      : 'Nunca'
+  };
 }
 
 function fileToDataUrl(file) {
@@ -78,6 +242,7 @@ function escapeHtml(value) {
 function renderTeams(container) {
   if (!container) return;
 
+  const currentUser = getCurrentUser();
   const teams = readStorage(TEAM_STORAGE_KEY);
 
   if (!teams.length) {
@@ -95,8 +260,10 @@ function renderTeams(container) {
     <div class="saved-grid">
       ${teams
         .map(
-          (team, index) => `
-            <article class="saved-card">
+          (team, index) => {
+            const isCreator = currentUser && team.creatorId === currentUser.overwatchId;
+            return `
+            <article class="saved-card team-card" data-team-id="${team.id}">
               <div class="saved-card-top">
                 ${
                   team.logo
@@ -111,28 +278,47 @@ function renderTeams(container) {
               <p>${escapeHtml(team.description || "Sin descripción todavía.")}</p>
               <div class="saved-tags">
                 ${(team.players || [])
-                  .filter(Boolean)
                   .map((player) => `<span>${escapeHtml(player)}</span>`)
                   .join("")}
               </div>
+              ${isCreator ? `<div class="team-actions"><button class="btn btn-sm btn-primary" data-edit-team-btn>✏️ Editar</button></div>` : ""}
             </article>
-          `
+            `;
+          }
         )
         .join("")}
     </div>
   `;
+  attachTeamCardHandlers(container);
+}
+
+function attachTeamCardHandlers(container) {
+  if (!container) return;
+  container.querySelectorAll('[data-edit-team-btn]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const card = btn.closest('.team-card');
+      const teamId = card?.getAttribute('data-team-id');
+      if (teamId) {
+        openTeamEditModal(teamId);
+      }
+    });
+  });
 }
 
 function renderProfiles(container) {
   if (!container) return;
 
-  const profiles = readStorage(PROFILE_STORAGE_KEY);
+  const currentUser = getCurrentUser();
+  const allProfiles = readStorage(PROFILE_STORAGE_KEY);
+  const profiles = currentUser ? allProfiles.filter(profile => profile.userId === currentUser.overwatchId) : allProfiles;
 
   if (!profiles.length) {
     container.innerHTML = `
       <div class="empty-state">
         <h3>No hay perfiles creados todavía</h3>
-        <p>Crea el primer perfil para guardar la información del jugador dentro de esta página.</p>
+        <p>${currentUser ? 'Crea el primer perfil para guardar la información del jugador.' : 'Inicia sesión para crear perfiles.'}</p>
+        ${currentUser ? '<a class="btn btn-primary" href="#profile-form">Crear perfil</a>' : '<a class="btn btn-primary" href="login.html">Iniciar sesión</a>'}
       </div>
     `;
     return;
@@ -172,17 +358,19 @@ function renderProfiles(container) {
 
 function attachProfileCardHandlers(container) {
   if (!container) return;
+  const currentUser = getCurrentUser();
+  const allProfiles = readStorage(PROFILE_STORAGE_KEY);
+  const userProfiles = currentUser ? allProfiles.filter(profile => profile.userId === currentUser.overwatchId) : allProfiles;
+
   container.querySelectorAll('[data-profile-index]').forEach((card) => {
     card.addEventListener('click', () => {
       const profileIndex = Number(card.dataset.profileIndex);
-      openProfileModal(profileIndex);
+      openProfileModal(userProfiles[profileIndex]);
     });
   });
 }
 
-function openProfileModal(index) {
-  const profiles = readStorage(PROFILE_STORAGE_KEY);
-  const profile = profiles[index];
+function openProfileModal(profile) {
   if (!profile) return;
 
   const modal = document.querySelector('.profile-modal');
@@ -212,24 +400,288 @@ function openProfileModal(index) {
   modal.setAttribute('aria-hidden', 'false');
 }
 
-function initProfileModal() {
-  const modal = document.querySelector('.profile-modal');
+function openTeamEditModal(teamId) {
+  const teams = readStorage(TEAM_STORAGE_KEY);
+  const teamIndex = teams.findIndex(t => t.id === teamId);
+  if (teamIndex === -1) return;
+
+  const team = teams[teamIndex];
+  const modal = document.querySelector('.team-edit-modal');
+  
   if (!modal) return;
-  const close = modal.querySelector('.modal-close');
-  const backdrop = modal.querySelector('.profile-modal-backdrop');
 
-  const closeModal = () => {
-    modal.classList.remove('open');
-    modal.setAttribute('aria-hidden', 'true');
-  };
+  const playersContainer = modal.querySelector('.team-players-container');
 
-  if (close) close.addEventListener('click', closeModal);
-  if (backdrop) backdrop.addEventListener('click', closeModal);
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && modal.classList.contains('open')) {
-      closeModal();
-    }
+  // Crear lista de jugadores
+  const playersHTML = (team.players || [])
+    .map((player, idx) => `
+      <div class="player-item" data-player-index="${idx}">
+        <input type="text" value="${escapeHtml(player)}" class="player-input" />
+        <button type="button" class="btn-sm btn-icon" data-move-up aria-label="Mover arriba" ${idx === 0 ? 'disabled' : ''}>⬆️</button>
+        <button type="button" class="btn-sm btn-icon" data-move-down aria-label="Mover abajo" ${idx === team.players.length - 1 ? 'disabled' : ''}>⬇️</button>
+        <button type="button" class="btn-sm btn-danger-sm" data-remove-player aria-label="Eliminar">✕</button>
+      </div>
+    `)
+    .join('');
+
+  playersContainer.innerHTML = playersHTML;
+
+  // Agregar listeners a los botones de jugadores
+  playersContainer.querySelectorAll('[data-move-up]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.closest('.player-item').dataset.playerIndex);
+      if (idx > 0) {
+        [team.players[idx], team.players[idx - 1]] = [team.players[idx - 1], team.players[idx]];
+        openTeamEditModal(teamId);
+      }
+    });
   });
+
+  playersContainer.querySelectorAll('[data-move-down]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.closest('.player-item').dataset.playerIndex);
+      if (idx < team.players.length - 1) {
+        [team.players[idx], team.players[idx + 1]] = [team.players[idx + 1], team.players[idx]];
+        openTeamEditModal(teamId);
+      }
+    });
+  });
+
+  playersContainer.querySelectorAll('[data-remove-player]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.closest('.player-item').dataset.playerIndex);
+      team.players.splice(idx, 1);
+      openTeamEditModal(teamId);
+    });
+  });
+
+  // Listener para agregar nuevo jugador
+  const addPlayerBtn = modal.querySelector('[data-add-player-btn]');
+  if (addPlayerBtn) {
+    addPlayerBtn.addEventListener('click', () => {
+      team.players.push('');
+      openTeamEditModal(teamId);
+    });
+  }
+
+  // Listener para guardar cambios
+  const saveBtn = modal.querySelector('[data-save-team-btn]');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      // Leer valores actualizados de los inputs
+      playersContainer.querySelectorAll('.player-input').forEach((input, idx) => {
+        team.players[idx] = input.value.trim();
+      });
+      team.players = team.players.filter(p => p.length > 0);
+
+      teams[teamIndex] = team;
+      writeStorage(TEAM_STORAGE_KEY, teams);
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      renderTeams(document.querySelector('[data-team-list]'));
+      alert('Equipo actualizado correctamente');
+    });
+  }
+
+  // Listener para cerrar
+  const closeBtns = modal.querySelectorAll('[data-close-team-modal]');
+  closeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    });
+  });
+
+  // Listener para cerrar con backdrop
+  const backdrop = modal.querySelector('.team-edit-modal-backdrop');
+  if (backdrop) {
+    backdrop.addEventListener('click', () => {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    });
+  }
+
+  // Listener para cerrar con Escape
+  const handleEscape = (e) => {
+    if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.removeEventListener('keydown', handleEscape);
+    }
+  };
+  document.addEventListener('keydown', handleEscape);
+
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function renderUserProfile() {
+  const currentUser = getCurrentUser();
+  const userInfoContainer = document.getElementById('user-info');
+
+  if (!userInfoContainer) return;
+
+  if (!currentUser) {
+    userInfoContainer.innerHTML = `
+      <div class="empty-state">
+        <h3>No has iniciado sesión</h3>
+        <p>Debes iniciar sesión para ver tu información de perfil.</p>
+        <a class="btn btn-primary" href="login.html">Iniciar Sesión</a>
+      </div>
+    `;
+    return;
+  }
+
+  userInfoContainer.innerHTML = `
+    <div class="user-info-details">
+      <div class="user-info-item">
+        <strong>Nombre completo:</strong> ${escapeHtml(currentUser.name || "No especificado")}
+      </div>
+      <div class="user-info-item">
+        <strong>Correo electrónico:</strong> ${escapeHtml(currentUser.email || "No especificado")}
+      </div>
+      <div class="user-info-item">
+        <strong>Overwatch ID:</strong> ${escapeHtml(currentUser.overwatchId)}
+      </div>
+      <div class="user-info-item">
+        <strong>Cuenta creada:</strong> ${new Date(currentUser.loggedAt || Date.now()).toLocaleDateString('es-CR')}
+      </div>
+    </div>
+  `;
+}
+
+function renderUserProfiles() {
+  const currentUser = getCurrentUser();
+  const profilesContainer = document.getElementById('user-profiles');
+
+  if (!profilesContainer) return;
+
+  if (!currentUser) {
+    profilesContainer.innerHTML = `
+      <div class="empty-state">
+        <h3>No has iniciado sesión</h3>
+        <p>Inicia sesión para ver tus perfiles de jugador.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const allProfiles = readStorage(PROFILE_STORAGE_KEY);
+  const userProfiles = allProfiles.filter(profile => profile.userId === currentUser.overwatchId);
+
+  if (!userProfiles.length) {
+    profilesContainer.innerHTML = `
+      <div class="empty-state">
+        <h3>No tienes perfiles creados</h3>
+        <p>Crea tu primer perfil de jugador para mostrar tu información.</p>
+        <a class="btn btn-primary" href="perfil.html">Crear Perfil</a>
+      </div>
+    `;
+    return;
+  }
+
+  profilesContainer.innerHTML = `
+    <div class="user-profiles-grid">
+      ${userProfiles.map(profile => `
+        <div class="user-profile-card">
+          <div class="user-profile-header">
+            ${profile.avatar
+              ? `<img class="user-profile-avatar" src="${profile.avatar}" alt="Avatar de ${escapeHtml(profile.nickname)}" />`
+              : `<div class="user-profile-avatar placeholder">${escapeHtml(profile.nickname.slice(0, 1) || "P")}</div>`
+            }
+            <div>
+              <h3>${escapeHtml(profile.nickname)}</h3>
+              <p class="user-profile-role">${escapeHtml(profile.role || "Jugador")}</p>
+            </div>
+          </div>
+          <div class="user-profile-details">
+            <p><strong>Nombre:</strong> ${escapeHtml(profile.name || "No especificado")}</p>
+            <p><strong>Battletag:</strong> ${escapeHtml(profile.battletag || "No especificado")}</p>
+            <p><strong>Equipo:</strong> ${escapeHtml(profile.team || "No especificado")}</p>
+            <p><strong>Biografía:</strong> ${escapeHtml(profile.bio || "Sin biografía")}</p>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function initSettingsPage() {
+  // Export data button
+  const exportBtn = document.getElementById('export-data-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      try {
+        exportAllData();
+        alert('Datos exportados correctamente. Revisa tus descargas.');
+      } catch (error) {
+        alert('Error al exportar los datos: ' + error.message);
+      }
+    });
+  }
+
+  // Import data input
+  const importInput = document.getElementById('import-data-input');
+  if (importInput) {
+    importInput.addEventListener('change', async (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        try {
+          await importAllData(file);
+        } catch (error) {
+          alert('Error al importar los datos: ' + error.message);
+        }
+      }
+      // Reset input
+      event.target.value = '';
+    });
+  }
+
+  // Clear data button
+  const clearBtn = document.getElementById('clear-data-btn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', clearAllData);
+  }
+
+  // Display storage info
+  const storageInfo = document.getElementById('storage-info');
+  if (storageInfo) {
+    const info = getStorageInfo();
+    storageInfo.innerHTML = `
+      <div class="storage-details">
+        <p><strong>Espacio usado:</strong> ${info.used}</p>
+        <p><strong>Espacio disponible:</strong> ${info.available}</p>
+        <p><strong>Último respaldo automático:</strong> ${info.lastBackup}</p>
+      </div>
+    `;
+  }
+
+  // Display browser info
+  const browserInfo = document.getElementById('browser-info');
+  if (browserInfo) {
+    const ua = navigator.userAgent;
+    let browser = 'Desconocido';
+    if (ua.includes('Chrome')) browser = 'Chrome';
+    else if (ua.includes('Firefox')) browser = 'Firefox';
+    else if (ua.includes('Safari')) browser = 'Safari';
+    else if (ua.includes('Edge')) browser = 'Edge';
+    browserInfo.textContent = browser;
+  }
+
+  // Display localStorage support
+  const storageSupport = document.getElementById('storage-support');
+  if (storageSupport) {
+    try {
+      const test = '__storage_test__';
+      localStorage.setItem(test, test);
+      localStorage.removeItem(test);
+      storageSupport.textContent = '✅ Soportado';
+      storageSupport.style.color = 'var(--primary)';
+    } catch {
+      storageSupport.textContent = '❌ No soportado';
+      storageSupport.style.color = 'var(--accent)';
+    }
+  }
 }
 
 function initTeamForm() {
@@ -244,11 +696,18 @@ function initTeamForm() {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      if (message) message.textContent = "Debes iniciar sesión para crear un equipo.";
+      return;
+    }
+
     const formData = new FormData(form);
     const logoFile = form.querySelector('input[type="file"]')?.files?.[0];
     const logo = await fileToDataUrl(logoFile);
 
     const team = {
+      id: Date.now().toString(),
       name: String(formData.get("team-name") || "").trim(),
       description: String(formData.get("team-description") || "").trim(),
       players: [
@@ -258,8 +717,10 @@ function initTeamForm() {
         formData.get("player-4"),
         formData.get("player-5"),
         formData.get("player-6"),
-      ].map((value) => String(value || "").trim()),
+      ].map((value) => String(value || "").trim()).filter(Boolean),
       logo,
+      creatorId: currentUser.overwatchId,
+      createdAt: Date.now()
     };
 
     if (!team.name) {
@@ -289,11 +750,18 @@ function initProfileForm() {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      if (message) message.textContent = "Debes iniciar sesión para crear un perfil.";
+      return;
+    }
+
     const formData = new FormData(form);
     const avatarFile = form.querySelector('input[type="file"]')?.files?.[0];
     const avatar = await fileToDataUrl(avatarFile);
 
     const profile = {
+      userId: currentUser.overwatchId,
       nickname: String(formData.get("nickname") || "").trim(),
       name: String(formData.get("name") || "").trim(),
       role: String(formData.get("role") || "").trim(),
@@ -301,6 +769,7 @@ function initProfileForm() {
       team: String(formData.get("team") || "").trim(),
       bio: String(formData.get("bio") || "").trim(),
       avatar,
+      createdAt: Date.now()
     };
 
     if (!profile.nickname) {
@@ -308,15 +777,12 @@ function initProfileForm() {
       return;
     }
 
-    const currentUser = getCurrentUser();
     const profiles = readStorage(PROFILE_STORAGE_KEY);
     profiles.push(profile);
     writeStorage(PROFILE_STORAGE_KEY, profiles);
 
     if (message) {
-      message.textContent = currentUser
-        ? `Perfil guardado localmente como ${currentUser.overwatchId}.`
-        : "Perfil guardado localmente.";
+      message.textContent = `Perfil guardado para ${currentUser.name || currentUser.overwatchId}.`;
     }
 
     renderProfiles(list);
@@ -508,6 +974,9 @@ document.addEventListener("DOMContentLoaded", () => {
   initPasswordToggle();
   initProfileButton();
   initProfileModal();
+  initUserProfilePage();
+  initSettingsPage();
+  initPeriodicBackup();
 });
 
 function initHeaderMenu() {
