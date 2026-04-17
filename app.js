@@ -1,5 +1,7 @@
 const TEAM_STORAGE_KEY = "academycr_teams";
 const PROFILE_STORAGE_KEY = "academycr_profiles";
+const ACCOUNT_STORAGE_KEY = "academycr_accounts";
+const SESSION_STORAGE_KEY = "academycr_session";
 
 function readStorage(key) {
   try {
@@ -8,6 +10,31 @@ function readStorage(key) {
   } catch {
     return [];
   }
+}
+
+function writeAccounts(accounts) {
+  writeStorage(ACCOUNT_STORAGE_KEY, accounts);
+}
+
+function readAccounts() {
+  return readStorage(ACCOUNT_STORAGE_KEY);
+}
+
+function getCurrentUser() {
+  try {
+    const session = localStorage.getItem(SESSION_STORAGE_KEY);
+    return session ? JSON.parse(session) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setCurrentUser(user) {
+  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(user));
+}
+
+function clearCurrentUser() {
+  localStorage.removeItem(SESSION_STORAGE_KEY);
 }
 
 function writeStorage(key, value) {
@@ -204,40 +231,18 @@ function initProfileForm() {
       return;
     }
 
-    // Check if user is logged in
-    try {
-      const userResponse = await fetch('/api/user');
-      const userResult = await userResponse.json();
-      if (userResult.userId) {
-        // Save to server
-        const response = await fetch('/api/profile', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(profile)
-        });
-        const result = await response.json();
-        if (result.success) {
-          if (message) message.textContent = "Perfil guardado correctamente en el servidor.";
-        } else {
-          if (message) message.textContent = "Error al guardar perfil.";
-        }
-      } else {
-        // Save to localStorage
-        const profiles = readStorage(PROFILE_STORAGE_KEY);
-        profiles.push(profile);
-        writeStorage(PROFILE_STORAGE_KEY, profiles);
-        if (message) message.textContent = "Perfil guardado localmente. Inicia sesión para guardar en el servidor.";
-        renderProfiles(list);
-      }
-    } catch (error) {
-      // Fallback to localStorage
-      const profiles = readStorage(PROFILE_STORAGE_KEY);
-      profiles.push(profile);
-      writeStorage(PROFILE_STORAGE_KEY, profiles);
-      if (message) message.textContent = "Perfil guardado localmente.";
-      renderProfiles(list);
+    const currentUser = getCurrentUser();
+    const profiles = readStorage(PROFILE_STORAGE_KEY);
+    profiles.push(profile);
+    writeStorage(PROFILE_STORAGE_KEY, profiles);
+
+    if (message) {
+      message.textContent = currentUser
+        ? `Perfil guardado localmente como ${currentUser.overwatchId}.`
+        : "Perfil guardado localmente.";
     }
 
+    renderProfiles(list);
     form.reset();
   });
 }
@@ -434,13 +439,9 @@ function initLogin() {
   const loginForm = document.getElementById('login-form');
   const registerForm = document.getElementById('register-form');
 
-  if (loginSection) {
-    // Check if already logged in
-    fetch('/api/user').then(res => res.json()).then(result => {
-      if (result.userId) {
-        window.location.href = 'index.html';
-      }
-    });
+  if (loginSection && getCurrentUser()) {
+    window.location.href = 'index.html';
+    return;
   }
 
   if (showRegister) {
@@ -460,58 +461,48 @@ function initLogin() {
   }
 
   if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
+    loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const formData = new FormData(loginForm);
-      const data = {
-        overwatchId: formData.get('overwatchId'),
-        password: formData.get('password')
-      };
+      const overwatchId = String(formData.get('overwatchId') || '').trim();
+      const password = String(formData.get('password') || '').trim();
+      const accounts = readAccounts();
+      const account = accounts.find((item) => item.overwatchId === overwatchId);
 
-      try {
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        const result = await response.json();
-        if (result.success) {
-          alert('Inicio de sesión exitoso');
-          window.location.href = 'index.html';
-        } else {
-          alert(result.error);
-        }
-      } catch (error) {
-        alert('Error al iniciar sesión');
+      if (!account || account.password !== password) {
+        alert('ID de Overwatch o contraseña incorrectos.');
+        return;
       }
+
+      setCurrentUser({ overwatchId, loggedAt: Date.now() });
+      alert('Inicio de sesión exitoso');
+      window.location.href = 'index.html';
     });
   }
 
   if (registerForm) {
-    registerForm.addEventListener('submit', async (e) => {
+    registerForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const formData = new FormData(registerForm);
-      const data = {
-        overwatchId: formData.get('overwatchId'),
-        password: formData.get('password')
-      };
+      const overwatchId = String(formData.get('overwatchId') || '').trim();
+      const password = String(formData.get('password') || '').trim();
+      const accounts = readAccounts();
 
-      try {
-        const response = await fetch('/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        const result = await response.json();
-        if (result.success) {
-          alert('Registro exitoso. Ahora crea tu perfil.');
-          window.location.href = 'perfil.html';
-        } else {
-          alert(result.error);
-        }
-      } catch (error) {
-        alert('Error al registrarse');
+      if (!overwatchId || !password) {
+        alert('Completa todos los campos para registrarte.');
+        return;
       }
+
+      if (accounts.some((item) => item.overwatchId === overwatchId)) {
+        alert('Ya existe una cuenta con ese ID de Overwatch.');
+        return;
+      }
+
+      accounts.push({ overwatchId, password });
+      writeAccounts(accounts);
+      setCurrentUser({ overwatchId, loggedAt: Date.now() });
+      alert('Registro exitoso. Ahora crea tu perfil.');
+      window.location.href = 'perfil.html';
     });
   }
 
@@ -565,26 +556,23 @@ function initLogin() {
 }
 
 async function checkLoginStatus() {
-  try {
-    const response = await fetch('/api/user');
-    const result = await response.json();
-    const loginBtn = document.getElementById('hero-login-btn');
-    const registerBtn = document.getElementById('hero-register-btn');
-    if (result.userId) {
-      if (loginBtn) loginBtn.textContent = `Sesión: ${result.userId}`;
-      if (registerBtn) registerBtn.style.display = 'none';
-      if (loginBtn) loginBtn.addEventListener('click', logout);
-    } else {
-      if (loginBtn) loginBtn.textContent = 'Iniciar Sesión';
-      if (registerBtn) registerBtn.style.display = 'inline-block';
+  const currentUser = getCurrentUser();
+  const loginBtn = document.getElementById('hero-login-btn');
+  const registerBtn = document.getElementById('hero-register-btn');
+
+  if (currentUser) {
+    if (loginBtn) {
+      loginBtn.textContent = `Sesión: ${currentUser.overwatchId}`;
+      loginBtn.addEventListener('click', logout);
     }
-  } catch (error) {
-    console.error('Error checking login status');
+    if (registerBtn) registerBtn.style.display = 'none';
+  } else {
+    if (loginBtn) loginBtn.textContent = 'Iniciar Sesión';
+    if (registerBtn) registerBtn.style.display = 'inline-block';
   }
 }
 
 function logout() {
-  fetch('/api/logout', { method: 'POST' }).then(() => {
-    checkLoginStatus();
-  });
+  clearCurrentUser();
+  checkLoginStatus();
 }
