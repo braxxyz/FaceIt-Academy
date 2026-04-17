@@ -5,6 +5,8 @@ const SESSION_STORAGE_KEY = "academycr_session";
 const LAST_LOGIN_STORAGE_KEY = "academycr_last_login";
 const BACKUP_STORAGE_KEY = "academycr_backup";
 const BACKUP_TIMESTAMP_KEY = "academycr_backup_timestamp";
+const MESSAGES_STORAGE_KEY = "academycr_messages";
+const CONVERSATIONS_STORAGE_KEY = "academycr_conversations";
 
 function readStorage(key) {
   try {
@@ -984,12 +986,38 @@ function initHeaderMenu() {
   const menuDropdown = document.querySelector('.menu-dropdown');
   if (!menuButton || !menuDropdown) return;
 
+  // Mostrar menú al pasar el mouse
+  menuButton.addEventListener('mouseenter', () => {
+    menuDropdown.classList.add('open');
+    menuDropdown.setAttribute('aria-hidden', 'false');
+  });
+
+  // Ocultar menú al salir del botón
+  menuButton.addEventListener('mouseleave', () => {
+    menuDropdown.classList.remove('open');
+    menuDropdown.setAttribute('aria-hidden', 'true');
+  });
+
+  // Mantener menú abierto mientras está sobre el dropdown
+  menuDropdown.addEventListener('mouseenter', () => {
+    menuDropdown.classList.add('open');
+    menuDropdown.setAttribute('aria-hidden', 'false');
+  });
+
+  // Ocultar al salir del dropdown
+  menuDropdown.addEventListener('mouseleave', () => {
+    menuDropdown.classList.remove('open');
+    menuDropdown.setAttribute('aria-hidden', 'true');
+  });
+
+  // Click también funciona como respaldo
   menuButton.addEventListener('click', (event) => {
     event.stopPropagation();
     menuDropdown.classList.toggle('open');
     menuDropdown.setAttribute('aria-hidden', menuDropdown.classList.contains('open') ? 'false' : 'true');
   });
 
+  // Cerrar si se hace click en otro lugar
   document.addEventListener('click', (event) => {
     if (!menuDropdown.contains(event.target) && !menuButton.contains(event.target)) {
       menuDropdown.classList.remove('open');
@@ -1203,4 +1231,320 @@ async function checkLoginStatus() {
 function logout() {
   clearCurrentUser();
   checkLoginStatus();
+}
+
+// ===== Chat System =====
+
+function createConversation(type, data) {
+  const currentUser = getCurrentUser();
+  if (!currentUser) return null;
+
+  const conversation = {
+    id: Date.now().toString(),
+    type, // 'direct', 'team', 'recruitment', 'scrims'
+    createdBy: currentUser.overwatchId,
+    createdAt: Date.now(),
+    title: data.title || 'Conversación',
+    participants: data.participants || [currentUser.overwatchId],
+    metadata: data.metadata || {}
+  };
+
+  const conversations = readStorage(CONVERSATIONS_STORAGE_KEY);
+  conversations.push(conversation);
+  writeStorage(CONVERSATIONS_STORAGE_KEY, conversations);
+
+  return conversation;
+}
+
+function sendMessage(conversationId, text) {
+  const currentUser = getCurrentUser();
+  if (!currentUser || !text.trim()) return null;
+
+  const message = {
+    id: Date.now().toString(),
+    conversationId,
+    senderId: currentUser.overwatchId,
+    senderName: currentUser.name || currentUser.overwatchId,
+    text: text.trim(),
+    timestamp: Date.now()
+  };
+
+  const messages = readStorage(MESSAGES_STORAGE_KEY);
+  messages.push(message);
+  writeStorage(MESSAGES_STORAGE_KEY, messages);
+
+  // Update conversation last activity
+  const conversations = readStorage(CONVERSATIONS_STORAGE_KEY);
+  const convIndex = conversations.findIndex(c => c.id === conversationId);
+  if (convIndex !== -1) {
+    conversations[convIndex].lastMessage = text.trim();
+    conversations[convIndex].lastMessageTime = Date.now();
+    writeStorage(CONVERSATIONS_STORAGE_KEY, conversations);
+  }
+
+  return message;
+}
+
+function getConversationMessages(conversationId) {
+  const messages = readStorage(MESSAGES_STORAGE_KEY);
+  return messages.filter(m => m.conversationId === conversationId).sort((a, b) => a.timestamp - b.timestamp);
+}
+
+function getUserConversations(filter = 'all') {
+  const currentUser = getCurrentUser();
+  if (!currentUser) return [];
+
+  const conversations = readStorage(CONVERSATIONS_STORAGE_KEY);
+  return conversations.filter(c => {
+    const isParticipant = c.participants.includes(currentUser.overwatchId);
+    if (!isParticipant) return false;
+
+    if (filter === 'all') return true;
+    return c.type === filter;
+  }).sort((a, b) => (b.lastMessageTime || b.createdAt) - (a.lastMessageTime || a.createdAt));
+}
+
+function renderChatList(filter = 'direct') {
+  const chatList = document.getElementById('chat-list');
+  if (!chatList) return;
+
+  const conversations = getUserConversations(filter);
+
+  if (!conversations.length) {
+    chatList.innerHTML = `
+      <div class="chat-empty-state">
+        <p>No hay ${filter === 'direct' ? 'mensajes directos' : 'conversaciones de ' + filter}</p>
+      </div>
+    `;
+    return;
+  }
+
+  chatList.innerHTML = conversations.map(conv => `
+    <div class="chat-item" data-conv-id="${conv.id}">
+      <div class="chat-item-header">
+        <h4>${escapeHtml(conv.title)}</h4>
+        <span class="chat-time">${new Date(conv.lastMessageTime || conv.createdAt).toLocaleDateString('es-CR')}</span>
+      </div>
+      <p class="chat-preview">${escapeHtml((conv.lastMessage || 'Sin mensajes aún').substring(0, 50))}...</p>
+    </div>
+  `).join('');
+
+  // Add click handlers
+  chatList.querySelectorAll('.chat-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const convId = item.getAttribute('data-conv-id');
+      renderChat(convId);
+    });
+  });
+}
+
+function renderChat(conversationId) {
+  const chatContainer = document.getElementById('chat-container');
+  if (!chatContainer) return;
+
+  const conversations = readStorage(CONVERSATIONS_STORAGE_KEY);
+  const conversation = conversations.find(c => c.id === conversationId);
+  if (!conversation) return;
+
+  const messages = getConversationMessages(conversationId);
+  const currentUser = getCurrentUser();
+
+  chatContainer.innerHTML = `
+    <div class="chat-header">
+      <h3>${escapeHtml(conversation.title)}</h3>
+      <p class="chat-type">${conversation.type === 'direct' ? '💬' : conversation.type === 'recruitment' ? '👥' : conversation.type === 'scrims' ? '🎮' : '📌'}</p>
+    </div>
+
+    <div class="chat-messages">
+      ${messages.map(msg => `
+        <div class="chat-message ${msg.senderId === currentUser?.overwatchId ? 'own' : 'other'}">
+          <div class="chat-message-content">
+            <strong>${escapeHtml(msg.senderName)}</strong>
+            <p>${escapeHtml(msg.text)}</p>
+            <span class="chat-message-time">${new Date(msg.timestamp).toLocaleTimeString('es-CR')}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <form class="chat-input-form" data-chat-form="${conversationId}">
+      <input type="text" class="chat-input" placeholder="Escribe tu mensaje..." autocomplete="off" />
+      <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem;">Enviar</button>
+    </form>
+  `;
+
+  // Auto scroll to bottom
+  const messagesDiv = chatContainer.querySelector('.chat-messages');
+  if (messagesDiv) {
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  // Add form handler
+  const form = chatContainer.querySelector('[data-chat-form]');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = form.querySelector('.chat-input');
+      const text = input.value;
+      if (text.trim()) {
+        sendMessage(conversationId, text);
+        input.value = '';
+        renderChat(conversationId);
+      }
+    });
+  }
+}
+
+function initChat() {
+  const currentUser = getCurrentUser();
+  if (!currentUser) {
+    const chatContainer = document.getElementById('chat-container');
+    if (chatContainer) {
+      chatContainer.innerHTML = `
+        <div class="chat-login-required">
+          <h2>Inicia sesión para acceder al chat</h2>
+          <p>Necesitas estar logueado para enviar y recibir mensajes.</p>
+          <a class="btn btn-primary" href="login.html">Ir a Login</a>
+        </div>
+      `;
+    }
+    return;
+  }
+
+  // Initialize chat tabs
+  const tabs = document.querySelectorAll('.chat-tab-btn');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const filter = tab.getAttribute('data-tab');
+      renderChatList(filter);
+    });
+  });
+
+  // Initialize new chat modal
+  const newChatBtn = document.getElementById('new-chat-btn');
+  const newChatModal = document.querySelector('.new-chat-modal');
+  if (newChatBtn && newChatModal) {
+    newChatBtn.addEventListener('click', () => {
+      newChatModal.classList.add('open');
+      newChatModal.setAttribute('aria-hidden', 'false');
+    });
+
+    // Type buttons
+    const typeButtons = newChatModal.querySelectorAll('.new-chat-type-btn');
+    typeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        typeButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const type = btn.getAttribute('data-type');
+        
+        newChatModal.querySelectorAll('.new-chat-form').forEach(form => {
+          form.style.display = 'none';
+        });
+        const form = newChatModal.querySelector(`#${type}-form`);
+        if (form) form.style.display = 'block';
+      });
+    });
+
+    // Close buttons
+    const closeButtons = newChatModal.querySelectorAll('[data-close-new-chat]');
+    closeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        newChatModal.classList.remove('open');
+        newChatModal.setAttribute('aria-hidden', 'true');
+      });
+    });
+
+    // Create direct message
+    const userSearch = document.getElementById('user-search');
+    const userResults = document.getElementById('user-results');
+    if (userSearch) {
+      userSearch.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const accounts = readAccounts();
+        const filtered = accounts.filter(acc => 
+          acc.overwatchId.toLowerCase().includes(query) ||
+          (acc.name && acc.name.toLowerCase().includes(query))
+        );
+
+        userResults.innerHTML = filtered.map(user => `
+          <div class="search-result-item" data-user="${user.overwatchId}">
+            <strong>${escapeHtml(user.name || user.overwatchId)}</strong>
+            <small>${escapeHtml(user.overwatchId)}</small>
+          </div>
+        `).join('');
+
+        userResults.querySelectorAll('.search-result-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const userId = item.getAttribute('data-user');
+            const conv = createConversation('direct', {
+              title: `Chat con ${userId}`,
+              participants: [currentUser.overwatchId, userId]
+            });
+            if (conv) {
+              newChatModal.classList.remove('open');
+              newChatModal.setAttribute('aria-hidden', 'true');
+              userSearch.value = '';
+              renderChatList('direct');
+              renderChat(conv.id);
+            }
+          });
+        });
+      });
+    }
+
+    // Create recruitment
+    const createRecruitmentBtn = newChatModal.querySelector('[data-create-recruitment]');
+    if (createRecruitmentBtn) {
+      createRecruitmentBtn.addEventListener('click', () => {
+        const title = document.getElementById('recruitment-title').value;
+        const message = document.getElementById('recruitment-message').value;
+        if (title && message) {
+          const conv = createConversation('recruitment', {
+            title,
+            participants: [currentUser.overwatchId],
+            metadata: { initialMessage: message }
+          });
+          if (conv) {
+            sendMessage(conv.id, message);
+            newChatModal.classList.remove('open');
+            newChatModal.setAttribute('aria-hidden', 'true');
+            document.getElementById('recruitment-title').value = '';
+            document.getElementById('recruitment-message').value = '';
+            renderChatList('recruitment');
+            renderChat(conv.id);
+          }
+        }
+      });
+    }
+
+    // Create scrims
+    const createScrimsBtn = newChatModal.querySelector('[data-create-scrims]');
+    if (createScrimsBtn) {
+      createScrimsBtn.addEventListener('click', () => {
+        const team = document.getElementById('scrims-team').value;
+        const message = document.getElementById('scrims-message').value;
+        if (team && message) {
+          const conv = createConversation('scrims', {
+            title: `Scrims con ${team}`,
+            participants: [currentUser.overwatchId],
+            metadata: { targetTeam: team }
+          });
+          if (conv) {
+            sendMessage(conv.id, message);
+            newChatModal.classList.remove('open');
+            newChatModal.setAttribute('aria-hidden', 'true');
+            document.getElementById('scrims-team').value = '';
+            document.getElementById('scrims-message').value = '';
+            renderChatList('scrims');
+            renderChat(conv.id);
+          }
+        }
+      });
+    }
+  }
+
+  // Initial render
+  renderChatList('direct');
 }
