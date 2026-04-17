@@ -1,5 +1,5 @@
-const TEAM_STORAGE_KEY = "faceit_teams";
-const PROFILE_STORAGE_KEY = "faceit_profiles";
+const TEAM_STORAGE_KEY = "academycr_teams";
+const PROFILE_STORAGE_KEY = "academycr_profiles";
 
 function readStorage(key) {
   try {
