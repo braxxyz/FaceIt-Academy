@@ -142,8 +142,8 @@ function renderProfiles(container) {
     <div class="saved-grid">
       ${profiles
         .map(
-          (profile) => `
-            <article class="saved-card profile-card">
+          (profile, index) => `
+            <article class="saved-card profile-card" data-profile-index="${index}">
               <div class="saved-card-top">
                 ${
                   profile.avatar
@@ -167,6 +167,69 @@ function renderProfiles(container) {
         .join("")}
     </div>
   `;
+  attachProfileCardHandlers(container);
+}
+
+function attachProfileCardHandlers(container) {
+  if (!container) return;
+  container.querySelectorAll('[data-profile-index]').forEach((card) => {
+    card.addEventListener('click', () => {
+      const profileIndex = Number(card.dataset.profileIndex);
+      openProfileModal(profileIndex);
+    });
+  });
+}
+
+function openProfileModal(index) {
+  const profiles = readStorage(PROFILE_STORAGE_KEY);
+  const profile = profiles[index];
+  if (!profile) return;
+
+  const modal = document.querySelector('.profile-modal');
+  const content = modal.querySelector('.profile-modal-content');
+  content.innerHTML = `
+    <div class="profile-detail-header">
+      ${
+        profile.avatar
+          ? `<img class="profile-detail-avatar" src="${profile.avatar}" alt="Avatar de ${escapeHtml(profile.nickname)}" />`
+          : `<div class="profile-detail-avatar placeholder">${escapeHtml(profile.nickname.slice(0, 1) || "P")}</div>`
+      }
+      <div>
+        <h2>${escapeHtml(profile.nickname || "Sin nickname")}</h2>
+        <p>${escapeHtml(profile.role || "Jugador")}</p>
+        <p class="profile-detail-subtitle">${escapeHtml(profile.name || "Sin nombre")}</p>
+      </div>
+    </div>
+    <div class="profile-detail-body">
+      <p><strong>Battletag:</strong> ${escapeHtml(profile.battletag || "No disponible")}</p>
+      <p><strong>Equipo:</strong> ${escapeHtml(profile.team || "No disponible")}</p>
+      <p><strong>Biografía:</strong></p>
+      <p>${escapeHtml(profile.bio || "Sin biografía todavía.")}</p>
+    </div>
+  `;
+
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function initProfileModal() {
+  const modal = document.querySelector('.profile-modal');
+  if (!modal) return;
+  const close = modal.querySelector('.modal-close');
+  const backdrop = modal.querySelector('.profile-modal-backdrop');
+
+  const closeModal = () => {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  };
+
+  if (close) close.addEventListener('click', closeModal);
+  if (backdrop) backdrop.addEventListener('click', closeModal);
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal.classList.contains('open')) {
+      closeModal();
+    }
+  });
 }
 
 function initTeamForm() {
@@ -443,6 +506,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initCalendar();
   initHeaderMenu();
   initPasswordToggle();
+  initProfileButton();
 });
 
 function initHeaderMenu() {
@@ -462,6 +526,24 @@ function initHeaderMenu() {
       menuDropdown.setAttribute('aria-hidden', 'true');
     }
   });
+}
+
+function initProfileButton() {
+  const profileLink = document.querySelector('.profile-link');
+  if (!profileLink) return;
+  const currentUser = getCurrentUser();
+  if (!currentUser) {
+    profileLink.style.display = 'none';
+    return;
+  }
+
+  profileLink.style.display = 'inline-flex';
+  const avatar = profileLink.querySelector('.profile-avatar');
+  if (avatar) {
+    const label = currentUser.overwatchId || 'P';
+    avatar.textContent = label.charAt(0).toUpperCase();
+    profileLink.setAttribute('title', `Ver perfil de ${label}`);
+  }
 }
 
 function initPasswordToggle() {
