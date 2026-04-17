@@ -427,7 +427,28 @@ document.addEventListener("DOMContentLoaded", () => {
   renderTeams(document.querySelector("[data-home-teams]"));
   initLogin();
   initCalendar();
+  initHeaderMenu();
 });
+
+function initHeaderMenu() {
+  const menuButton = document.querySelector('.menu-button');
+  const menuDropdown = document.querySelector('.menu-dropdown');
+  if (!menuButton || !menuDropdown) return;
+
+  menuButton.addEventListener('click', (event) => {
+    event.stopPropagation();
+    menuDropdown.classList.toggle('open');
+    menuDropdown.setAttribute('aria-hidden', menuDropdown.classList.contains('open') ? 'false' : 'true');
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!menuDropdown.contains(event.target) && !menuButton.contains(event.target)) {
+      menuDropdown.classList.remove('open');
+      menuDropdown.setAttribute('aria-hidden', 'true');
+    }
+  });
+}
+
 
 // Login functionality
 function initLogin() {
