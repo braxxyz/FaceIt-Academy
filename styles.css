@@ -864,6 +864,33 @@ a {
   font: inherit;
 }
 
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 4.75rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.password-toggle:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
 .form-group input::placeholder,
 .form-group textarea::placeholder {
   color: rgba(245, 241, 235, 0.42);
@@ -874,6 +901,28 @@ a {
   outline: none;
   border-color: rgba(255, 90, 31, 0.5);
   box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.12);
+}
+
+.form-card form button {
+  margin-top: 1.2rem;
+}
+
+#login-section p,
+#register-section p {
+  margin-top: 1.4rem;
+  font-size: 0.95rem;
+  color: rgba(248, 249, 255, 0.88);
+}
+
+#login-section p a,
+#register-section p a {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+#login-section p a:hover,
+#register-section p a:hover {
+  text-decoration: underline;
 }
 
 .player-grid {

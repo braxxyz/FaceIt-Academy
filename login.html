@@ -49,9 +49,12 @@
                 <label for="overwatch-id">ID de Overwatch</label>
                 <input id="overwatch-id" name="overwatchId" type="text" required />
               </div>
-              <div class="form-group">
+              <div class="form-group password-group">
                 <label for="password">Contraseña</label>
-                <input id="password" name="password" type="password" required />
+                <div class="password-field">
+                  <input id="password" name="password" type="password" required />
+                  <button type="button" class="password-toggle" aria-label="Mostrar contraseña">Ver</button>
+                </div>
               </div>
               <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
             </form>
@@ -65,9 +68,12 @@
                 <label for="reg-overwatch-id">ID de Overwatch</label>
                 <input id="reg-overwatch-id" name="overwatchId" type="text" required />
               </div>
-              <div class="form-group">
+              <div class="form-group password-group">
                 <label for="reg-password">Contraseña</label>
-                <input id="reg-password" name="password" type="password" required />
+                <div class="password-field">
+                  <input id="reg-password" name="password" type="password" required />
+                  <button type="button" class="password-toggle" aria-label="Mostrar contraseña">Ver</button>
+                </div>
               </div>
               <button type="submit" class="btn btn-primary">Crear Cuenta</button>
             </form>

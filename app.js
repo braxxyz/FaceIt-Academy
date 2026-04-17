@@ -428,6 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initLogin();
   initCalendar();
   initHeaderMenu();
+  initPasswordToggle();
 });
 
 function initHeaderMenu() {
@@ -446,6 +447,21 @@ function initHeaderMenu() {
       menuDropdown.classList.remove('open');
       menuDropdown.setAttribute('aria-hidden', 'true');
     }
+  });
+}
+
+function initPasswordToggle() {
+  document.querySelectorAll('.password-toggle').forEach((button) => {
+    button.addEventListener('click', () => {
+      const fieldWrapper = button.closest('.password-field');
+      if (!fieldWrapper) return;
+      const input = fieldWrapper.querySelector('input');
+      if (!input) return;
+      const isVisible = input.type === 'text';
+      input.type = isVisible ? 'password' : 'text';
+      button.textContent = isVisible ? 'Ver' : 'Ocultar';
+      button.setAttribute('aria-label', isVisible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+    });
   });
 }
 
