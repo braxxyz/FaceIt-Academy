@@ -501,13 +501,14 @@ function initLogin() {
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const formData = new FormData(loginForm);
+      const username = String(formData.get('username') || '').trim();
       const overwatchId = String(formData.get('overwatchId') || '').trim();
       const password = String(formData.get('password') || '').trim();
       const accounts = readAccounts();
-      const account = accounts.find((item) => item.overwatchId === overwatchId);
+      const account = accounts.find((item) => item.overwatchId === overwatchId && item.username === username);
 
       if (!account || account.password !== password) {
-        alert('ID de Overwatch o contraseña incorrectos.');
+        alert('Usuario, ID de Overwatch o contraseña incorrectos.');
         return;
       }
 
@@ -521,11 +522,12 @@ function initLogin() {
     registerForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const formData = new FormData(registerForm);
+      const username = String(formData.get('username') || '').trim();
       const overwatchId = String(formData.get('overwatchId') || '').trim();
       const password = String(formData.get('password') || '').trim();
       const accounts = readAccounts();
 
-      if (!overwatchId || !password) {
+      if (!username || !overwatchId || !password) {
         alert('Completa todos los campos para registrarte.');
         return;
       }
@@ -535,7 +537,7 @@ function initLogin() {
         return;
       }
 
-      accounts.push({ overwatchId, password });
+      accounts.push({ username, overwatchId, password });
       writeAccounts(accounts);
       setCurrentUser({ overwatchId, loggedAt: Date.now() });
       alert('Registro exitoso. Ahora crea tu perfil.');

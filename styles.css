@@ -192,9 +192,9 @@ a {
 }
 
 .btn-primary {
-  background: linear-gradient(120deg, var(--primary), var(--primary-2));
-  color: #F8F9FF;
-  box-shadow: 0 0 0 1px rgba(218, 38, 28, 0.18), 0 0 28px rgba(218, 38, 28, 0.28);
+  background: linear-gradient(120deg, #e93b3b, #9d1616);
+  color: #FFFFFF;
+  box-shadow: 0 0 0 1px rgba(255, 82, 82, 0.22), 0 0 28px rgba(255, 84, 84, 0.35);
 }
 
 .btn-light {
@@ -205,9 +205,14 @@ a {
 }
 
 .btn-outline {
-  background: rgba(3, 6, 36, 0.52);
-  border: 1px solid rgba(218, 38, 28, 0.28);
-  color: rgba(248, 249, 255, 0.92);
+  background: transparent;
+  border: 1px solid rgba(248, 249, 255, 0.16);
+  color: rgba(248, 249, 255, 0.96);
+  box-shadow: none;
+}
+
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .btn-sm {
@@ -869,26 +874,29 @@ a {
 }
 
 .password-field input {
-  padding-right: 4.75rem;
+  padding-right: 5.5rem;
 }
 
 .password-toggle {
   position: absolute;
-  top: 50%;
+  top: 38%;
   right: 0.75rem;
   transform: translateY(-50%);
-  border: none;
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.35);
   color: #fff;
-  padding: 0.45rem 0.75rem;
+  padding: 0.4rem 0.85rem;
   border-radius: 999px;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
   font-weight: 700;
   cursor: pointer;
-  transition: background 150ms ease, color 150ms ease;
+  transition: background 150ms ease, color 150ms ease, transform 150ms ease;
 }
 
 .password-toggle:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-52%);
 }
 
 .form-group input::placeholder,
