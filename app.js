@@ -51,6 +51,14 @@ function writeObjectStorage(key, value) {
   }
 }
 
+function readAccounts() {
+  return readStorage(ACCOUNT_STORAGE_KEY);
+}
+
+function writeAccounts(accounts) {
+  writeStorage(ACCOUNT_STORAGE_KEY, accounts);
+}
+
 function autoBackup() {
   try {
     const backupData = {
