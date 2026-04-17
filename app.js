@@ -242,11 +242,186 @@ function initProfileForm() {
   });
 }
 
+const CALENDAR_STORAGE_KEY = "academycr_calendar_events";
+const CALENDAR_WEEKDAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+function readCalendarEvents() {
+  return readStorage(CALENDAR_STORAGE_KEY);
+}
+
+function writeCalendarEvents(events) {
+  writeStorage(CALENDAR_STORAGE_KEY, events);
+}
+
+function formatDateKey(date) {
+  return date.toISOString().split("T")[0];
+}
+
+function formatDateLabel(date) {
+  return date.toLocaleDateString("es-CR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function initCalendar() {
+  const container = document.getElementById("calendar-container");
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="calendar-panel">
+      <div class="calendar-header">
+        <button type="button" id="calendar-prev" class="calendar-nav" aria-label="Mes anterior">&lt;</button>
+        <div class="calendar-title" id="calendar-title"></div>
+        <button type="button" id="calendar-next" class="calendar-nav" aria-label="Mes siguiente">&gt;</button>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+      <div class="calendar-footer">
+        <div class="calendar-day-info">
+          <h3 id="calendar-selected-date"></h3>
+          <div id="calendar-events"></div>
+        </div>
+        <form id="calendar-event-form" class="calendar-event-form">
+          <label for="calendar-event-text">Agregar evento para esta fecha</label>
+          <input id="calendar-event-text" type="text" placeholder="Ejemplo: Partido vs Golden Kings" required />
+          <button type="submit" class="btn btn-primary">Guardar evento</button>
+        </form>
+      </div>
+    </div>
+  `;
+
+  const state = {
+    currentDate: new Date(),
+    selectedDate: new Date(),
+    events: readCalendarEvents(),
+  };
+
+  const title = document.getElementById("calendar-title");
+  const calendarGrid = document.getElementById("calendar-grid");
+  const selectedDateTitle = document.getElementById("calendar-selected-date");
+  const eventsList = document.getElementById("calendar-events");
+  const eventForm = document.getElementById("calendar-event-form");
+  const eventInput = document.getElementById("calendar-event-text");
+
+  const render = () => {
+    renderCalendar(state, title, calendarGrid);
+    renderCalendarDetails(state, selectedDateTitle, eventsList);
+  };
+
+  document.getElementById("calendar-prev")?.addEventListener("click", () => {
+    state.currentDate.setMonth(state.currentDate.getMonth() - 1);
+    render();
+  });
+
+  document.getElementById("calendar-next")?.addEventListener("click", () => {
+    state.currentDate.setMonth(state.currentDate.getMonth() + 1);
+    render();
+  });
+
+  eventForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const text = eventInput.value.trim();
+    if (!text) return;
+
+    const events = readCalendarEvents();
+    events.push({
+      date: formatDateKey(state.selectedDate),
+      text,
+    });
+
+    writeCalendarEvents(events);
+    state.events = events;
+    eventInput.value = "";
+    render();
+  });
+
+  render();
+}
+
+function renderCalendar(state, titleEl, gridEl) {
+  if (!titleEl || !gridEl) return;
+
+  const currentMonth = new Date(state.currentDate.getFullYear(), state.currentDate.getMonth(), 1);
+  titleEl.textContent = currentMonth.toLocaleDateString("es-CR", {
+    month: "long",
+    year: "numeric",
+  });
+
+  gridEl.innerHTML = "";
+
+  CALENDAR_WEEKDAYS.forEach((weekday) => {
+    const weekdayCell = document.createElement("div");
+    weekdayCell.className = "calendar-weekday";
+    weekdayCell.textContent = weekday;
+    gridEl.appendChild(weekdayCell);
+  });
+
+  const firstDayIndex = currentMonth.getDay();
+  const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+
+  for (let index = 0; index < firstDayIndex; index += 1) {
+    const emptyCell = document.createElement("div");
+    emptyCell.className = "calendar-day empty";
+    gridEl.appendChild(emptyCell);
+  }
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const dayDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    const dateKey = formatDateKey(dayDate);
+    const dayEvents = state.events.filter((event) => event.date === dateKey);
+
+    const dayButton = document.createElement("button");
+    dayButton.type = "button";
+    dayButton.className = "calendar-day";
+    if (formatDateKey(state.selectedDate) === dateKey) {
+      dayButton.classList.add("selected");
+    }
+    if (dayEvents.length) {
+      dayButton.classList.add("has-events");
+    }
+
+    dayButton.innerHTML = `<span class="day-number">${day}</span>`;
+    dayButton.addEventListener("click", () => {
+      state.selectedDate = dayDate;
+      render();
+    });
+
+    gridEl.appendChild(dayButton);
+  }
+}
+
+function renderCalendarDetails(state, selectedDateEl, eventsContainer) {
+  if (!selectedDateEl || !eventsContainer) return;
+
+  selectedDateEl.textContent = formatDateLabel(state.selectedDate);
+  const selectedKey = formatDateKey(state.selectedDate);
+  const eventsForDay = state.events.filter((event) => event.date === selectedKey);
+
+  if (!eventsForDay.length) {
+    eventsContainer.innerHTML = `<p class="calendar-empty">No hay eventos programados para este día.</p>`;
+    return;
+  }
+
+  eventsContainer.innerHTML = eventsForDay
+    .map(
+      (event) => `
+        <div class="calendar-event">
+          <span class="calendar-event-time"></span>
+          <span>${escapeHtml(event.text)}</span>
+        </div>
+      `
+    )
+    .join("");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initTeamForm();
   initProfileForm();
   renderTeams(document.querySelector("[data-home-teams]"));
   initLogin();
+  initCalendar();
 });
 
 // Login functionality
