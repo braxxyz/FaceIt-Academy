@@ -2,6 +2,7 @@ const TEAM_STORAGE_KEY = "academycr_teams";
 const PROFILE_STORAGE_KEY = "academycr_profiles";
 const ACCOUNT_STORAGE_KEY = "academycr_accounts";
 const SESSION_STORAGE_KEY = "academycr_session";
+const LAST_LOGIN_STORAGE_KEY = "academycr_last_login";
 
 function readStorage(key) {
   try {
@@ -10,6 +11,19 @@ function readStorage(key) {
   } catch {
     return [];
   }
+}
+
+function readObjectStorage(key) {
+  try {
+    const value = localStorage.getItem(key);
+    return value ? JSON.parse(value) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeObjectStorage(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
 }
 
 function writeAccounts(accounts) {
@@ -481,6 +495,14 @@ function initLogin() {
     return;
   }
 
+  const lastLogin = readObjectStorage(LAST_LOGIN_STORAGE_KEY);
+  if (!getCurrentUser() && lastLogin) {
+    const loginInput = document.querySelector('#login-form [name="overwatchId"]');
+    const passwordInput = document.querySelector('#login-form [name="password"]');
+    if (loginInput) loginInput.value = lastLogin.overwatchId || '';
+    if (passwordInput) passwordInput.value = lastLogin.password || '';
+  }
+
   if (showRegister) {
     showRegister.addEventListener('click', (e) => {
       e.preventDefault();
@@ -501,18 +523,18 @@ function initLogin() {
     loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const formData = new FormData(loginForm);
-      const username = String(formData.get('username') || '').trim();
       const overwatchId = String(formData.get('overwatchId') || '').trim();
       const password = String(formData.get('password') || '').trim();
       const accounts = readAccounts();
-      const account = accounts.find((item) => item.overwatchId === overwatchId && item.username === username);
+      const account = accounts.find((item) => item.overwatchId === overwatchId);
 
       if (!account || account.password !== password) {
-        alert('Usuario, ID de Overwatch o contraseña incorrectos.');
+        alert('Usuario/Tag de OW o contraseña incorrectos.');
         return;
       }
 
       setCurrentUser({ overwatchId, loggedAt: Date.now() });
+      writeObjectStorage(LAST_LOGIN_STORAGE_KEY, { overwatchId, password });
       alert('Inicio de sesión exitoso');
       window.location.href = 'index.html';
     });
@@ -522,26 +544,26 @@ function initLogin() {
     registerForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const formData = new FormData(registerForm);
-      const username = String(formData.get('username') || '').trim();
       const overwatchId = String(formData.get('overwatchId') || '').trim();
       const password = String(formData.get('password') || '').trim();
       const accounts = readAccounts();
 
-      if (!username || !overwatchId || !password) {
+      if (!overwatchId || !password) {
         alert('Completa todos los campos para registrarte.');
         return;
       }
 
       if (accounts.some((item) => item.overwatchId === overwatchId)) {
-        alert('Ya existe una cuenta con ese ID de Overwatch.');
+        alert('Ya existe una cuenta con ese Tag de OW.');
         return;
       }
 
-      accounts.push({ username, overwatchId, password });
+      accounts.push({ overwatchId, password });
       writeAccounts(accounts);
+      writeObjectStorage(LAST_LOGIN_STORAGE_KEY, { overwatchId, password });
       setCurrentUser({ overwatchId, loggedAt: Date.now() });
-      alert('Registro exitoso. Ahora crea tu perfil.');
-      window.location.href = 'perfil.html';
+      alert('Registro exitoso. Ya estás conectado.');
+      window.location.href = 'index.html';
     });
   }
 
