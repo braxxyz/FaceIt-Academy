@@ -6,6 +6,8 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const PUBLIC_DIR = path.join(__dirname, 'public');
+const PAGES_DIR = path.join(PUBLIC_DIR, 'pages');
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -18,10 +20,10 @@ app.use(session({
 }));
 
 // Serve static files
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(PUBLIC_DIR));
 
 // Users storage
-const USERS_FILE = path.join(__dirname, 'users.json');
+const USERS_FILE = path.join(__dirname, 'data', 'users.json');
 
 // Helper functions
 function readUsers() {
@@ -38,6 +40,24 @@ function writeUsers(users) {
 }
 
 // Routes
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(PAGES_DIR, 'index.html'));
+});
+
+[
+  'index.html',
+  'login.html',
+  'perfil.html',
+  'mi-perfil.html',
+  'chat.html',
+  'configuracion.html',
+  'crear-equipo.html'
+].forEach((page) => {
+  app.get(`/${page}`, (_req, res) => {
+    res.sendFile(path.join(PAGES_DIR, page));
+  });
+});
+
 app.get('/api/profile', (req, res) => {
   if (!req.session.userId) {
     return res.status(401).json({ error: 'No autenticado' });

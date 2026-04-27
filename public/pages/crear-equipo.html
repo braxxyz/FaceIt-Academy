@@ -1,0 +1,126 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crear equipo | Academy CR</title>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <script defer src="../assets/js/app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">
+        <img class="logo-image" src="../assets/images/Costa_Rica_Academy.png" alt="Academy CR logo" />
+        ACADEMY CR
+      </a>
+      <nav class="nav">
+        <a href="index.html#teams">Equipos</a>
+        <a class="btn btn-primary" href="crear-equipo.html">Crear equipo</a>
+      </nav>
+      <button class="menu-button" type="button" aria-label="Abrir menú">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <a class="profile-link" href="mi-perfil.html" aria-label="Ver mi perfil">
+        <span class="profile-avatar">P</span>
+      </a>
+      <div class="menu-dropdown" aria-hidden="true">
+        <a href="index.html#teams">Equipos</a>
+        <a href="perfil.html">Crear perfil</a>
+        <a href="chat.html">Mensajes</a>
+        <a href="mi-perfil.html">Mi Perfil</a>
+        <a href="configuracion.html">Configuración</a>
+        <a href="index.html">Volver al inicio</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section form-page">
+      <div class="container form-layout">
+        <div class="form-intro">
+          <p class="eyebrow">Inscripción de equipo</p>
+          <h1>Crea tu equipo para la liga</h1>
+          <p>Completa la información principal del equipo. Dejé espacios para nombre, descripción, jugadores y logo.</p>
+          <a class="btn btn-outline" href="index.html">Volver al inicio</a>
+        </div>
+
+        <div class="form-card team-form-card">
+          <div class="team-image-card">
+            <img src="../assets/images/Costa_Rica_Academy.png" alt="Academy CR" />
+          </div>
+          <form class="team-form" data-team-form>
+            <div class="form-group">
+              <label for="team-name">Nombre del equipo</label>
+              <input id="team-name" name="team-name" type="text" placeholder="Ejemplo: Academy Titans" />
+            </div>
+
+            <div class="form-group">
+              <label for="team-description">Descripción del equipo</label>
+              <textarea id="team-description" name="team-description" rows="5" placeholder="Describe el estilo del equipo, región, horarios o datos importantes."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Jugadores</label>
+              <div class="player-grid">
+                <input type="text" name="player-1" placeholder="Jugador 1" />
+                <input type="text" name="player-2" placeholder="Jugador 2" />
+                <input type="text" name="player-3" placeholder="Jugador 3" />
+                <input type="text" name="player-4" placeholder="Jugador 4" />
+                <input type="text" name="player-5" placeholder="Jugador 5" />
+                <input type="text" name="player-6" placeholder="Suplente o coach" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="team-logo">Logo del equipo</label>
+              <input id="team-logo" name="team-logo" type="file" accept="image/*" />
+              <p class="field-help">Puedes subir PNG, JPG o cualquier imagen para identificar tu equipo.</p>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit">Guardar equipo</button>
+              <a class="btn btn-light" href="index.html#teams">Ver lista de equipos</a>
+            </div>
+            <p class="form-message" data-team-message></p>
+          </form>
+        </div>
+      </div>
+
+      <div class="container saved-section">
+        <div class="section-header">
+          <h2>Equipos guardados</h2>
+          <p>Los equipos que registres se irán viendo aquí mismo.</p>
+        </div>
+        <div data-team-list></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Team Edit Modal -->
+  <div class="team-edit-modal" aria-hidden="true">
+    <div class="team-edit-modal-backdrop"></div>
+    <div class="team-edit-modal-content">
+      <div class="team-edit-modal-header">
+        <h2>Editar Jugadores del Equipo</h2>
+        <button class="modal-close" data-close-team-modal aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="team-edit-modal-body">
+        <div class="team-players-container">
+          <!-- Players will be populated by JavaScript -->
+        </div>
+        <div class="team-edit-actions">
+          <button type="button" class="btn btn-outline" data-add-player-btn">+ Agregar Jugador</button>
+        </div>
+      </div>
+      <div class="team-edit-modal-footer">
+        <button type="button" class="btn btn-primary" data-save-team-btn">💾 Guardar Cambios</button>
+        <button type="button" class="btn btn-outline" data-close-team-modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

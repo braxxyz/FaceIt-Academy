@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar SesiÃ³n | Academy CR</title>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <script src="../assets/js/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">
+        <img class="logo-image" src="../assets/images/Costa_Rica_Academy.png" alt="Academy CR logo" />
+        ACADEMY CR
+      </a>
+      <nav class="nav">
+        <a href="index.html#teams">Equipos</a>
+        <a class="btn btn-primary" href="perfil.html">Crear perfil</a>
+      </nav>
+      <button class="menu-button" type="button" aria-label="Abrir menÃº">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <a class="profile-link" href="mi-perfil.html" aria-label="Ver mi perfil">
+        <span class="profile-avatar">P</span>
+      </a>
+      <div class="menu-dropdown" aria-hidden="true">
+        <a href="index.html#teams">Equipos</a>
+        <a href="perfil.html">Crear perfil</a>
+        <a href="chat.html">Mensajes</a>
+        <a href="mi-perfil.html">Mi Perfil</a>
+        <a href="configuracion.html">ConfiguraciÃ³n</a>
+        <a href="index.html">Volver al inicio</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section form-page">
+      <div class="container form-layout">
+        <div class="form-intro">
+          <p class="eyebrow">Acceso</p>
+          <h1>Bienvenido a Academy CR</h1>
+          <p>Inicia sesiÃ³n con tu ID de Overwatch o crea una cuenta nueva para acceder a todas las funciones.</p>
+          <a class="btn btn-outline" href="index.html">Volver al inicio</a>
+        </div>
+
+        <div class="form-card">
+          <div id="login-section">
+            <h2>Iniciar SesiÃ³n</h2>
+            <form id="login-form">
+              <div class="form-group">
+                <label for="overwatch-id">Usuario y Tag de OW (#)</label>
+                <input id="overwatch-id" name="overwatchId" type="text" required />
+              </div>
+              <div class="form-group password-group">
+                <label for="password">ContraseÃ±a</label>
+                <div class="password-field">
+                  <input id="password" name="password" type="password" required />
+                  <button type="button" class="password-toggle" aria-label="Mostrar contraseÃ±a">Ver</button>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">Iniciar SesiÃ³n</button>
+            </form>
+            <p>Â¿No tienes cuenta? <a href="#" id="show-register">RegÃ­strate aquÃ­</a></p>
+          </div>
+
+          <div id="register-section" style="display: none;">
+            <h2>Crear Cuenta</h2>
+            <form id="register-form">
+              <div class="form-group">
+                <label for="reg-name">Nombre completo</label>
+                <input id="reg-name" name="name" type="text" required />
+              </div>
+              <div class="form-group">
+                <label for="reg-email">Correo electrÃ³nico</label>
+                <input id="reg-email" name="email" type="email" required />
+              </div>
+              <div class="form-group">
+                <label for="reg-overwatch-id">Usuario y Tag de OW (#)</label>
+                <input id="reg-overwatch-id" name="overwatchId" type="text" required />
+              </div>
+              <div class="form-group password-group">
+                <label for="reg-password">Crear ContraseÃ±a</label>
+                <div class="password-field">
+                  <input id="reg-password" name="password" type="password" required />
+                  <button type="button" class="password-toggle" aria-label="Mostrar contraseÃ±a">Ver</button>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">Crear Cuenta</button>
+            </form>
+            <p>Â¿Ya tienes cuenta? <a href="#" id="show-login">Inicia sesiÃ³n</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>Â© 2026 Academy CR. Nombres e imÃ¡genes son sÃ³lo de ejemplo.</p>
+      <p>Esta pÃ¡gina fue creada 100% por Akashi.</p>
+      <div class="footer-links">
+        <a href="#">TÃ©rminos</a>
+        <a href="#">Privacidad</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

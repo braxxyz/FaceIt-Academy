@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat | Academy CR</title>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <script defer src="../assets/js/app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">
+        <img class="logo-image" src="../assets/images/Costa_Rica_Academy.png" alt="Academy CR logo" />
+        ACADEMY CR
+      </a>
+      <nav class="nav">
+        <a href="index.html#teams">Equipos</a>
+        <a class="btn btn-primary" href="perfil.html">Crear perfil</a>
+      </nav>
+      <button class="menu-button" type="button" aria-label="Abrir menÃº">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <a class="profile-link" href="mi-perfil.html" aria-label="Ver mi perfil">
+        <span class="profile-avatar">P</span>
+      </a>
+      <div class="menu-dropdown" aria-hidden="true">
+        <a href="index.html#teams">Equipos</a>
+        <a href="perfil.html">Crear perfil</a>
+        <a href="mi-perfil.html">Mi Perfil</a>
+        <a href="configuracion.html">ConfiguraciÃ³n</a>
+        <a href="index.html">Volver al inicio</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section chat-page">
+      <div class="chat-layout">
+        <!-- Sidebar de conversaciones -->
+        <aside class="chat-sidebar">
+          <div class="chat-sidebar-header">
+            <h2>Mensajes</h2>
+            <button id="new-chat-btn" class="btn-icon-small" aria-label="Nuevo chat">âœŽ</button>
+          </div>
+
+          <div class="chat-tabs">
+            <button class="chat-tab-btn active" data-tab="direct">Directos</button>
+            <button class="chat-tab-btn" data-tab="team">Equipos</button>
+            <button class="chat-tab-btn" data-tab="recruitment">Reclutamiento</button>
+            <button class="chat-tab-btn" data-tab="scrims">Scrims/PrÃ¡cticas</button>
+          </div>
+
+          <div id="chat-list" class="chat-list">
+            <!-- Chat conversations will be populated here -->
+          </div>
+        </aside>
+
+        <!-- Ãrea principal de chat -->
+        <div class="chat-main">
+          <div id="chat-container" class="chat-container">
+            <div class="chat-empty">
+              <p>Selecciona una conversaciÃ³n para empezar</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- New Chat Modal -->
+  <div class="new-chat-modal" aria-hidden="true">
+    <div class="new-chat-modal-backdrop"></div>
+    <div class="new-chat-modal-content">
+      <div class="new-chat-modal-header">
+        <h2>Nuevo Chat</h2>
+        <button class="modal-close" data-close-new-chat aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="new-chat-modal-body">
+        <div class="new-chat-tabs">
+          <button class="new-chat-type-btn active" data-type="direct">ðŸ’¬ Mensaje Directo</button>
+          <button class="new-chat-type-btn" data-type="recruitment">ðŸ‘¥ Reclutamiento</button>
+          <button class="new-chat-type-btn" data-type="scrims">ðŸŽ® Scrims/PrÃ¡cticas</button>
+        </div>
+
+        <div id="direct-chat-form" class="new-chat-form active">
+          <label for="user-search">Buscar Usuario:</label>
+          <input id="user-search" type="text" placeholder="Nombre o Overwatch ID..." />
+          <div id="user-results" class="search-results"></div>
+        </div>
+
+        <div id="recruitment-form" class="new-chat-form" style="display:none;">
+          <label for="recruitment-title">TÃ­tulo del Anuncio:</label>
+          <input id="recruitment-title" type="text" placeholder="Ej: Buscamos DPS para equipo competitivo" />
+          <label for="recruitment-message">DescripciÃ³n:</label>
+          <textarea id="recruitment-message" rows="4" placeholder="CuÃ©ntanos quÃ© roles buscas, nivel requerido, etc."></textarea>
+          <button type="button" class="btn btn-primary" data-create-recruitment>Crear Anuncio</button>
+        </div>
+
+        <div id="scrims-form" class="new-chat-form" style="display:none;">
+          <label for="scrims-team">Equipo Contrincante:</label>
+          <input id="scrims-team" type="text" placeholder="Nombre del equipo..." />
+          <label for="scrims-message">Propuesta:</label>
+          <textarea id="scrims-message" rows="4" placeholder="Describe la propuesta de scrim/prÃ¡ctica..."></textarea>
+          <button type="button" class="btn btn-primary" data-create-scrims>Enviar Propuesta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>Â© 2026 Academy CR. Nombres e imÃ¡genes son sÃ³lo de ejemplo.</p>
+      <p>Esta pÃ¡gina fue creada 100% por Akashi.</p>
+      <div class="footer-links">
+        <a href="#">TÃ©rminos</a>
+        <a href="#">Privacidad</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initChat();
+    });
+  </script>
+</body>
+</html>

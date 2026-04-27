@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crear perfil | Academy CR</title>
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <script defer src="../assets/js/app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">
+        <img class="logo-image" src="../assets/images/Costa_Rica_Academy.png" alt="Academy CR logo" />
+        ACADEMY CR
+      </a>
+      <nav class="nav">
+        <a href="index.html#teams">Equipos</a>
+        <a class="btn btn-primary" href="perfil.html">Crear perfil</a>
+      </nav>
+      <button class="menu-button" type="button" aria-label="Abrir menÃº">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <a class="profile-link" href="mi-perfil.html" aria-label="Ver mi perfil">
+        <span class="profile-avatar">P</span>
+      </a>
+      <div class="menu-dropdown" aria-hidden="true">
+        <a href="index.html#teams">Equipos</a>
+        <a href="perfil.html">Crear perfil</a>
+        <a href="chat.html">Mensajes</a>
+        <a href="mi-perfil.html">Mi Perfil</a>
+        <a href="configuracion.html">ConfiguraciÃ³n</a>
+        <a href="index.html">Volver al inicio</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section form-page">
+      <div class="container form-layout">
+        <div class="form-intro">
+          <p class="eyebrow">Perfil de jugador</p>
+          <h1>Crea tu perfil</h1>
+          <p>Esta pantalla permite guardar la informaciÃ³n del jugador dentro de la pÃ¡gina para que luego se vea listada.</p>
+          <a class="btn btn-outline" href="index.html">Volver al inicio</a>
+        </div>
+
+        <div class="form-card team-form-card">
+          <form class="team-form" id="profile-form" data-profile-form>
+            <div class="form-group">
+              <label for="nickname">Nickname</label>
+              <input id="nickname" name="nickname" type="text" placeholder="Ejemplo: TulhuAim" />
+            </div>
+
+            <div class="form-group">
+              <label for="name">Nombre real</label>
+              <input id="name" name="name" type="text" placeholder="Nombre del jugador" />
+            </div>
+
+            <div class="form-group">
+              <label for="role">Rol principal</label>
+              <input id="role" name="role" type="text" placeholder="Tank, DPS, Support..." />
+            </div>
+
+            <div class="form-group">
+              <label for="battletag">Battletag</label>
+              <input id="battletag" name="battletag" type="text" placeholder="Jugador#1234" />
+            </div>
+
+            <div class="form-group">
+              <label for="team">Equipo actual</label>
+              <input id="team" name="team" type="text" placeholder="Nombre del equipo" />
+            </div>
+
+            <div class="form-group">
+              <label for="bio">DescripciÃ³n del perfil</label>
+              <textarea id="bio" name="bio" rows="5" placeholder="CuÃ©ntanos un poco del jugador, experiencia o disponibilidad."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="avatar">Avatar o foto</label>
+              <input id="avatar" name="avatar" type="file" accept="image/*" />
+              <p class="field-help">Puedes subir una imagen para identificar el perfil.</p>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" type="submit">Guardar perfil</button>
+              <a class="btn btn-light" href="index.html">Volver al inicio</a>
+            </div>
+            <p class="form-message" data-profile-message></p>
+          </form>
+        </div>
+      </div>
+
+      <div class="container saved-section">
+        <div class="section-header">
+          <h2>Perfiles guardados</h2>
+          <p>Los perfiles creados se irÃ¡n mostrando aquÃ­.</p>
+        </div>
+        <div data-profile-list></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Profile Modal -->
+  <div class="profile-modal" aria-hidden="true">
+    <div class="profile-modal-backdrop"></div>
+    <div class="profile-modal-content">
+      <button class="modal-close" aria-label="Cerrar modal">&times;</button>
+    </div>
+  </div>
+</body>
+</html>
+
