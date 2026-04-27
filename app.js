@@ -1556,3 +1556,4 @@ function initChat() {
   // Initial render
   renderChatList('direct');
 }
+
