@@ -2212,10 +2212,10 @@ a {
 /* ===== Auth Page ===== */
 body.auth-page {
   background:
-    radial-gradient(circle at 20% 18%, rgba(109, 77, 255, 0.14), transparent 12%),
-    radial-gradient(circle at 76% 22%, rgba(176, 98, 255, 0.26), transparent 20%),
-    radial-gradient(circle at 50% 100%, rgba(57, 18, 117, 0.35), transparent 40%),
-    linear-gradient(180deg, #080511 0%, #04030b 100%);
+    radial-gradient(circle at 16% 20%, rgba(218, 38, 28, 0.14), transparent 16%),
+    radial-gradient(circle at 74% 18%, rgba(12, 30, 139, 0.28), transparent 22%),
+    radial-gradient(circle at 50% 100%, rgba(12, 30, 139, 0.22), transparent 42%),
+    linear-gradient(180deg, #030624 0%, #0c1038 38%, #030624 100%);
   overflow-x: hidden;
 }
 
@@ -2253,9 +2253,9 @@ body.auth-page {
   left: 13%;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.5), rgba(176, 118, 255, 0.24) 35%, rgba(67, 31, 132, 0.04) 70%);
+    radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.55), rgba(218, 38, 28, 0.22) 35%, rgba(12, 30, 139, 0.06) 72%);
   filter: blur(8px);
-  box-shadow: 0 0 34px rgba(147, 92, 255, 0.35);
+  box-shadow: 0 0 34px rgba(218, 38, 28, 0.18);
   z-index: -2;
 }
 
@@ -2266,11 +2266,11 @@ body.auth-page {
   right: -7%;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 38% 40%, rgba(133, 81, 255, 0.98), rgba(91, 41, 205, 0.92) 34%, rgba(27, 16, 67, 0.96) 66%, rgba(7, 5, 17, 0.98) 100%);
+    radial-gradient(circle at 38% 40%, rgba(37, 86, 255, 0.98), rgba(12, 30, 139, 0.94) 34%, rgba(6, 10, 48, 0.97) 66%, rgba(3, 6, 36, 0.99) 100%);
   box-shadow:
     inset -45px -34px 95px rgba(8, 4, 20, 0.85),
-    inset 10px 0 60px rgba(203, 165, 255, 0.14),
-    0 0 120px rgba(127, 68, 255, 0.4);
+    inset 10px 0 60px rgba(255, 255, 255, 0.08),
+    0 0 120px rgba(12, 30, 139, 0.35);
   z-index: -2;
 }
 
@@ -2280,7 +2280,7 @@ body.auth-page {
   inset: auto -10% 6% -6%;
   height: 18%;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(236, 220, 255, 0.92) 46%, rgba(210, 151, 255, 0.55) 70%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(245, 241, 235, 0.9) 46%, rgba(218, 38, 28, 0.28) 72%, rgba(255, 255, 255, 0) 100%);
   filter: blur(4px);
   transform: rotate(-8deg);
 }
@@ -2312,7 +2312,7 @@ body.auth-page {
   height: 40px;
   border-radius: 14px;
   border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 24px rgba(164, 108, 255, 0.18);
+  box-shadow: 0 0 24px rgba(218, 38, 28, 0.14);
 }
 
 .auth-card {
@@ -2321,7 +2321,7 @@ body.auth-page {
   padding: 2rem 1.8rem 1.5rem;
   border-radius: 22px;
   background: linear-gradient(180deg, rgba(16, 14, 28, 0.84), rgba(7, 6, 16, 0.88));
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(218, 38, 28, 0.14);
   box-shadow:
     0 24px 80px rgba(0, 0, 0, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -2337,7 +2337,7 @@ body.auth-page {
   height: 230px;
   border-radius: 50%;
   background:
-    radial-gradient(circle, rgba(255, 198, 255, 0.88) 0%, rgba(221, 91, 255, 0.72) 24%, rgba(109, 48, 255, 0.18) 56%, rgba(109, 48, 255, 0) 74%);
+    radial-gradient(circle, rgba(255, 167, 131, 0.82) 0%, rgba(218, 38, 28, 0.55) 26%, rgba(12, 30, 139, 0.18) 58%, rgba(12, 30, 139, 0) 76%);
   filter: blur(10px);
   opacity: 0.92;
   z-index: 0;
@@ -2403,8 +2403,8 @@ body.auth-page {
 }
 
 .auth-field input:focus {
-  border-color: rgba(205, 159, 255, 0.88);
-  box-shadow: 0 1px 0 rgba(205, 159, 255, 0.88);
+  border-color: rgba(218, 38, 28, 0.72);
+  box-shadow: 0 1px 0 rgba(218, 38, 28, 0.72);
 }
 
 .auth-password-field input {
@@ -2419,7 +2419,7 @@ body.auth-page {
   border-left: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0;
   background: transparent;
-  color: rgba(232, 214, 255, 0.8);
+  color: rgba(248, 249, 255, 0.8);
   font-size: 0.8rem;
   font-weight: 600;
 }
@@ -2442,7 +2442,7 @@ body.auth-page {
 
 .auth-link-subtle:hover,
 .auth-switch a:hover {
-  color: #cfa8ff;
+  color: #ff8c6e;
 }
 
 .auth-submit.btn-primary {
@@ -2450,8 +2450,8 @@ body.auth-page {
   margin-top: 0.6rem;
   padding: 0.85rem 1.1rem;
   border-radius: 12px;
-  background: linear-gradient(90deg, #5a12ff 0%, #a120ff 100%);
-  box-shadow: 0 12px 30px rgba(122, 43, 255, 0.4);
+  background: linear-gradient(90deg, #da261c 0%, #b61e17 45%, #0c1e8b 100%);
+  box-shadow: 0 12px 30px rgba(12, 30, 139, 0.28);
 }
 
 .auth-divider {
@@ -2499,7 +2499,7 @@ body.auth-page {
 }
 
 .auth-switch a {
-  color: #8f5dff;
+  color: #ff8c6e;
   font-weight: 700;
 }
 
