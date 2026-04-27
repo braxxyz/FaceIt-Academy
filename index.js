@@ -234,6 +234,10 @@ app.get('/api/user', (req, res) => {
   res.json({ user: getCurrentUserFromSession(req) });
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
