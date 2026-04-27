@@ -1179,7 +1179,7 @@ function initPasswordToggle() {
       const isVisible = input.type === 'text';
       const isAuthPage = document.body.classList.contains('auth-page');
       input.type = isVisible ? 'password' : 'text';
-      button.textContent = isAuthPage ? (isVisible ? 'Show' : 'Hide') : (isVisible ? 'Ver' : 'Ocultar');
+      button.textContent = isAuthPage ? (isVisible ? 'Mostrar' : 'Ocultar') : (isVisible ? 'Ver' : 'Ocultar');
       button.setAttribute('aria-label', isVisible ? 'Mostrar contraseña' : 'Ocultar contraseña');
     });
   });
