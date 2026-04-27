@@ -7,48 +7,160 @@ const BACKUP_STORAGE_KEY = "academycr_backup";
 const BACKUP_TIMESTAMP_KEY = "academycr_backup_timestamp";
 const MESSAGES_STORAGE_KEY = "academycr_messages";
 const CONVERSATIONS_STORAGE_KEY = "academycr_conversations";
+const CALENDAR_STORAGE_KEY = "academycr_calendar_events";
+const SERVER_STORAGE_MAP = {
+  [TEAM_STORAGE_KEY]: "teams",
+  [PROFILE_STORAGE_KEY]: "profiles",
+  [ACCOUNT_STORAGE_KEY]: "accounts",
+  [MESSAGES_STORAGE_KEY]: "messages",
+  [CONVERSATIONS_STORAGE_KEY]: "conversations",
+  [CALENDAR_STORAGE_KEY]: "calendar"
+};
+const storageCache = new Map();
+let currentUserCache = null;
+
+function cloneValue(value) {
+  if (value === null || value === undefined) return value;
+  return JSON.parse(JSON.stringify(value));
+}
+
+function getStorageDefault(key) {
+  return key === SESSION_STORAGE_KEY || key === LAST_LOGIN_STORAGE_KEY ? null : [];
+}
+
+function setCachedValue(key, value) {
+  const normalized = value ?? getStorageDefault(key);
+  storageCache.set(key, cloneValue(normalized));
+  localStorage.setItem(key, JSON.stringify(normalized));
+  return normalized;
+}
+
+async function apiRequest(url, options = {}) {
+  const config = {
+    credentials: "same-origin",
+    headers: {},
+    ...options
+  };
+
+  if (options.body !== undefined) {
+    config.headers = {
+      "Content-Type": "application/json",
+      ...config.headers
+    };
+  }
+
+  const response = await fetch(url, config);
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || "No se pudo completar la solicitud.");
+  }
+
+  return data;
+}
+
+function persistStorageKey(key, value) {
+  const serverKey = SERVER_STORAGE_MAP[key];
+  if (!serverKey) return Promise.resolve();
+
+  return apiRequest(`/api/storage/${serverKey}`, {
+    method: "POST",
+    body: JSON.stringify({ value })
+  }).catch((error) => {
+    console.warn(`Error syncing ${key} to server:`, error);
+  });
+}
 
 function readStorage(key) {
+  if (storageCache.has(key)) {
+    return cloneValue(storageCache.get(key));
+  }
+
   try {
     const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : [];
+    const parsed = value ? JSON.parse(value) : getStorageDefault(key);
+    storageCache.set(key, cloneValue(parsed));
+    return cloneValue(parsed);
   } catch (error) {
     console.warn(`Error reading ${key} from localStorage:`, error);
-    // Try to recover from backup
-    return recoverFromBackup(key) || [];
+    const recovered = recoverFromBackup(key) || getStorageDefault(key);
+    storageCache.set(key, cloneValue(recovered));
+    return cloneValue(recovered);
   }
 }
 
 function readObjectStorage(key) {
-  try {
-    const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : null;
-  } catch (error) {
-    console.warn(`Error reading ${key} from localStorage:`, error);
-    return recoverFromBackup(key) || null;
-  }
+  const value = readStorage(key);
+  return value === undefined ? null : value;
 }
 
 function writeStorage(key, value) {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
-    // Auto-backup after writing
+    const normalized = setCachedValue(key, value);
+    persistStorageKey(key, normalized);
     autoBackup();
   } catch (error) {
-    console.error(`Error writing ${key} to localStorage:`, error);
+    console.error(`Error writing ${key}:`, error);
     alert('Error al guardar los datos. Revisa el espacio disponible en tu navegador.');
   }
 }
 
 function writeObjectStorage(key, value) {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
-    // Auto-backup after writing
+    setCachedValue(key, value);
     autoBackup();
   } catch (error) {
-    console.error(`Error writing ${key} to localStorage:`, error);
+    console.error(`Error writing ${key}:`, error);
     alert('Error al guardar los datos. Revisa el espacio disponible en tu navegador.');
   }
+}
+
+function getCurrentUser() {
+  if (currentUserCache !== null) {
+    return cloneValue(currentUserCache);
+  }
+  const stored = readObjectStorage(SESSION_STORAGE_KEY);
+  return stored ? cloneValue(stored) : null;
+}
+
+function setCurrentUser(user) {
+  currentUserCache = user ? cloneValue(user) : null;
+  writeObjectStorage(SESSION_STORAGE_KEY, currentUserCache);
+}
+
+function clearCurrentUser() {
+  currentUserCache = null;
+  writeObjectStorage(SESSION_STORAGE_KEY, null);
+}
+
+async function initializePersistentStorage() {
+  const localSnapshot = {};
+  Object.keys(SERVER_STORAGE_MAP).forEach((key) => {
+    try {
+      const raw = localStorage.getItem(key);
+      localSnapshot[key] = raw ? JSON.parse(raw) : getStorageDefault(key);
+    } catch {
+      localSnapshot[key] = getStorageDefault(key);
+    }
+  });
+
+  const data = await apiRequest("/api/bootstrap");
+  const serverStorage = data.storage || {};
+
+  Object.entries(SERVER_STORAGE_MAP).forEach(([localKey, serverKey]) => {
+    const serverValue = Array.isArray(serverStorage[serverKey]) ? serverStorage[serverKey] : [];
+    const localValue = Array.isArray(localSnapshot[localKey]) ? localSnapshot[localKey] : [];
+    const shouldUseLocal = !serverValue.length && localValue.length;
+    const mergedValue = shouldUseLocal ? localValue : serverValue;
+    setCachedValue(localKey, mergedValue);
+
+    if (shouldUseLocal) {
+      persistStorageKey(localKey, mergedValue);
+    }
+  });
+
+  currentUserCache = data.currentUser || null;
+  writeObjectStorage(SESSION_STORAGE_KEY, currentUserCache);
 }
 
 function readAccounts() {
@@ -800,7 +912,6 @@ function initProfileForm() {
   });
 }
 
-const CALENDAR_STORAGE_KEY = "academycr_calendar_events";
 const CALENDAR_WEEKDAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
 function readCalendarEvents() {
@@ -974,7 +1085,13 @@ function renderCalendarDetails(state, selectedDateEl, eventsContainer) {
     .join("");
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    await initializePersistentStorage();
+  } catch (error) {
+    console.warn("No se pudo cargar el almacenamiento persistente del servidor:", error);
+  }
+
   initTeamForm();
   initProfileForm();
   renderTeams(document.querySelector("[data-home-teams]"));
@@ -1060,8 +1177,9 @@ function initPasswordToggle() {
       const input = fieldWrapper.querySelector('input');
       if (!input) return;
       const isVisible = input.type === 'text';
+      const isAuthPage = document.body.classList.contains('auth-page');
       input.type = isVisible ? 'password' : 'text';
-      button.textContent = isVisible ? 'Ver' : 'Ocultar';
+      button.textContent = isAuthPage ? (isVisible ? 'Show' : 'Hide') : (isVisible ? 'Ver' : 'Ocultar');
       button.setAttribute('aria-label', isVisible ? 'Mostrar contraseña' : 'Ocultar contraseña');
     });
   });
@@ -1108,7 +1226,7 @@ function initLogin() {
   }
 
   if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(loginForm);
       const overwatchId = String(formData.get('overwatchId') || '').trim();
@@ -1134,7 +1252,7 @@ function initLogin() {
   }
 
   if (registerForm) {
-    registerForm.addEventListener('submit', (e) => {
+    registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(registerForm);
       const name = String(formData.get('name') || '').trim();
