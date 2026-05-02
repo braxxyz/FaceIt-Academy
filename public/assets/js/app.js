@@ -1199,8 +1199,23 @@ function initLogin() {
   const registerSection = document.getElementById('register-section');
   const showRegister = document.getElementById('show-register');
   const showLogin = document.getElementById('show-login');
+  const authTabs = document.querySelectorAll('.auth-tab');
   const loginForm = document.getElementById('login-form');
   const registerForm = document.getElementById('register-form');
+
+  const setAuthMode = (mode) => {
+    if (!loginSection || !registerSection) return;
+    const isLogin = mode === 'login';
+    loginSection.style.display = isLogin ? 'block' : 'none';
+    registerSection.style.display = isLogin ? 'none' : 'block';
+
+    authTabs.forEach((tab) => {
+      const tabIsLogin = tab.id === 'show-login';
+      const isActive = isLogin ? tabIsLogin : !tabIsLogin;
+      tab.classList.toggle('active', isActive);
+      tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+  };
 
   if (loginSection && getCurrentUser()) {
     window.location.href = 'index.html';
@@ -1218,18 +1233,18 @@ function initLogin() {
   if (showRegister) {
     showRegister.addEventListener('click', (e) => {
       e.preventDefault();
-      loginSection.style.display = 'none';
-      registerSection.style.display = 'block';
+      setAuthMode('register');
     });
   }
 
   if (showLogin) {
     showLogin.addEventListener('click', (e) => {
       e.preventDefault();
-      registerSection.style.display = 'none';
-      loginSection.style.display = 'block';
+      setAuthMode('login');
     });
   }
+
+  setAuthMode('login');
 
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
