@@ -1163,8 +1163,14 @@ function initProfileButton() {
   profileLink.style.display = 'inline-flex';
   const avatar = profileLink.querySelector('.profile-avatar');
   if (avatar) {
+    const profiles = readStorage(PROFILE_STORAGE_KEY);
+    const ownProfile = profiles.find((profile) => profile.userId === currentUser.overwatchId && profile.avatar);
     const label = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : (currentUser.overwatchId || 'P').charAt(0).toUpperCase();
-    avatar.textContent = label;
+    if (ownProfile?.avatar) {
+      avatar.innerHTML = `<img class="profile-avatar-image" src="${ownProfile.avatar}" alt="Foto de perfil de ${escapeHtml(currentUser.name || currentUser.overwatchId || 'usuario')}" />`;
+    } else {
+      avatar.textContent = label;
+    }
     profileLink.setAttribute('title', `Ver perfil de ${currentUser.name || currentUser.overwatchId}`);
   }
 }
